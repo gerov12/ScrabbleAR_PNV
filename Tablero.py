@@ -376,59 +376,53 @@ def main(nombre = 'Jugador', tema ='Claro', nivel = 'nivel1', tiempo = 3.0):
                 posAtril = event #guarda la posicion en el atril de la letra clickeada
                 letra = window.Element(posAtril).GetText() #guarda la letra clickeada
         elif event in casillas:#si hago click en una casilla del tablero
-            if inicial: #si es la ficha inicial
-                if event == '0707': #si selecciono el casillero inicial
-                    if letra != '': #si previamente clickee una letra del atril
-                        if len(palabra) == 0: #si es la primer letra de la palabra
-                            colocar_letra(event, posAtril, letra, palabra, fichas_desocupadas, casillas_ocupadas) #coloco la letra en la casilla
-                            posAtril = '' #borro la pos guardada para que no se guarde varias veces en el tablero al clickearlo
-                            letra = '' #idem pero con la letra
-                        elif len(palabra) == 1: #si es la segunda letra de la palabra
-                            resultado = consecutivo(event)
-                            if resultado[0]: #si la casilla (event) seleccionada es consecutivo a la letra anteriormente colocada
-                                orientacion = resultado[1] #guardo la orientacion
-                                colocar_letra(event, posAtril, letra, palabra, fichas_desocupadas, casillas_ocupadas) #coloco la letra en la casilla
-                                posAtril = '' #borro la pos guardada para que no se guarde varias veces en el tablero al clickearlo
-                                letra = '' #idem pero con la letra
-                                print(orientacion)
-                        elif len(palabra) > 1: #si es la letra 3 o mayor (ya está definida la orientacion)
-                            if orientada(event, orientacion): #si la casilla es consecutiva según la orientación definida
-                                colocar_letra(event, posAtril, letra, palabra, fichas_desocupadas, casillas_ocupadas) #coloco la letra en la casilla
-                                posAtril = '' #borro la pos guardada para que no se guarde varias veces en el tablero al clickearlo
-                                letra = '' #idem pero con la letra
-                    inicial = False
-            else:
-                if letra != '': #si previamente clickee una letra del atril
-                    if len(palabra) == 0: #si es la primer letra de la palabra
+            if letra != '': #si previamente clickee una letra del atril
+                if len(palabra) == 0: #si es la primer letra de la palabra
+                    colocar_letra(event, posAtril, letra, palabra, fichas_desocupadas, casillas_ocupadas) #coloco la letra en la casilla
+                    posAtril = '' #borro la pos guardada para que no se guarde varias veces en el tablero al clickearlo
+                    letra = '' #idem pero con la letra
+                elif len(palabra) == 1: #si es la segunda letra de la palabra
+                    resultado = consecutivo(event)
+                    if resultado[0]: #si la casilla (event) seleccionada es consecutivo a la letra anteriormente colocada
+                        orientacion = resultado[1] #guardo la orientacion
                         colocar_letra(event, posAtril, letra, palabra, fichas_desocupadas, casillas_ocupadas) #coloco la letra en la casilla
                         posAtril = '' #borro la pos guardada para que no se guarde varias veces en el tablero al clickearlo
                         letra = '' #idem pero con la letra
-                    elif len(palabra) == 1: #si es la segunda letra de la palabra
-                        resultado = consecutivo(event)
-                        if resultado[0]: #si la casilla (event) seleccionada es consecutivo a la letra anteriormente colocada
-                            orientacion = resultado[1] #guardo la orientacion
-                            colocar_letra(event, posAtril, letra, palabra, fichas_desocupadas, casillas_ocupadas) #coloco la letra en la casilla
-                            posAtril = '' #borro la pos guardada para que no se guarde varias veces en el tablero al clickearlo
-                            letra = '' #idem pero con la letra
-                            print(orientacion) #
-                    elif len(palabra) > 1: #si es la letra 3 o mayor (ya está definida la orientacion)
-                        if orientada(event, orientacion): #si la casilla es consecutiva según la orientación definida
-                            colocar_letra(event, posAtril, letra, palabra, fichas_desocupadas, casillas_ocupadas) #coloco la letra en la casilla
-                            posAtril = '' #borro la pos guardada para que no se guarde varias veces en el tablero al clickearlo
-                            letra = '' #idem pero con la letra
+                        print(orientacion) #
+                elif len(palabra) > 1: #si es la letra 3 o mayor (ya está definida la orientacion)
+                    if orientada(event, orientacion): #si la casilla es consecutiva según la orientación definida
+                        colocar_letra(event, posAtril, letra, palabra, fichas_desocupadas, casillas_ocupadas) #coloco la letra en la casilla
+                        posAtril = '' #borro la pos guardada para que no se guarde varias veces en el tablero al clickearlo
+                        letra = '' #idem pero con la letra
 
         elif event == 'Confirmar Palabra':
             orientacion = ''
             word = ''.join(letra for letra in palabra) #junto las letras colocadas
             print(word)
             if es_palabra(word) and len(word)>=2: #ya que lexicon y spelling toman como palabras a las letras individuales
-                print('entra con puntos : ' + str(totalJUG)) #
-                totalJUG = sumar_puntos(puntajes, casillasESP, palabra, casillas_ocupadas, totalJUG) #luego hay que ver si el que arma la palabra es el jugador o la maquina (totalJUG a modo de prueba)
-                print('nuevo total: '+str(totalJUG)) #
-                print() #
-                window.Element('PJ').Update(value = totalJUG)
-                mezclar(fichas_desocupadas, bolsa) #relleno el atril
-                fichas_desocupadas = [] #reinicio la lista de fichas desocupadas
+                if inicial: #si la palabra que coloqué es la primera del juego
+                    if '0707' in casillas_ocupadas: #si la casilla inicial está ocupada
+                        print('entra con puntos : ' + str(totalJUG)) #
+                        totalJUG = sumar_puntos(puntajes, casillasESP, palabra, casillas_ocupadas, totalJUG) #luego hay que ver si el que arma la palabra es el jugador o la maquina (totalJUG a modo de prueba)
+                        print('nuevo total: '+str(totalJUG)) #
+                        print() #
+                        window.Element('PJ').Update(value = totalJUG)
+                        mezclar(fichas_desocupadas, bolsa) #relleno el atril
+                        fichas_desocupadas = [] #reinicio la lista de fichas desocupadas
+                        inicial = False #desactivo la variable que indica que la palabra inicial aún no se colocó
+                    else: #si está desocupada
+                        sg.Popup("Error", "Una letra debe ocupar la casilla inicial") #informo el error
+                        devolver(fichas_desocupadas, casillas_ocupadas) #devuelve las letras al atril
+                        fichas_desocupadas = [] #reinicio la lista de fichas desocupadas
+                else: #si no es la palabra incial prosigo normalmente
+                    print('entra con puntos : ' + str(totalJUG)) #
+                    totalJUG = sumar_puntos(puntajes, casillasESP, palabra, casillas_ocupadas, totalJUG) #luego hay que ver si el que arma la palabra es el jugador o la maquina (totalJUG a modo de prueba)
+                    print('nuevo total: '+str(totalJUG)) #
+                    print() #
+                    window.Element('PJ').Update(value = totalJUG)
+                    mezclar(fichas_desocupadas, bolsa) #relleno el atril
+                    fichas_desocupadas = [] #reinicio la lista de fichas desocupadas
+
             else:
                 print(word+' no es palabra') #
                 if '0707' in casillas_ocupadas: #si era la palabra inicial vuelvo a activar la variable que indica que se colocará la primer palabra del juego
