@@ -3,6 +3,7 @@ import json
 import random
 import pattern.es
 import Menú
+import time
 
 def main(nombre = 'Jugador', tema ='Claro', nivel = 'nivel1', tiempo = 3.0):
     def llenar_bolsa(nivel = 'nivel1'): #carga las cantides para c/ letra segun el nivel ingresado por parametro
@@ -31,7 +32,7 @@ def main(nombre = 'Jugador', tema ='Claro', nivel = 'nivel1', tiempo = 3.0):
             casillas_esp=json.load(archivo_casillas)
         return casillas_esp#[nivel] #devuelve el dic del nivel correspondiente
 
-    def cargar_tablero(casillas_esp): #crea el layout del tablero
+    def cargar_tablero(casillas_esp, nivel = 'nivel1'): #crea el layout del tablero
         board = []
         for y in range(14,-1,-1): #de 14 a 0 ya que las filas en el layout van en ese orden
             fila = []
@@ -45,10 +46,11 @@ def main(nombre = 'Jugador', tema ='Claro', nivel = 'nivel1', tiempo = 3.0):
                     auxKey = auxKey+'0'+str(y) #si el valor de la coordenada y es de un solo digito le agrego un 0 adelante
                 else:
                     auxKey = auxKey+str(y)
-                if auxKey in casillas_esp:
-                    color = casillas_esp[auxKey][1] #si es una casilla especial le coloco el color correspondiente
+                if auxKey in casillas_esp[nivel]:
+                    color = casillas_esp[nivel][auxKey][1] #si es una casilla especial le coloco el color correspondiente
                 else:
                     color = 'white'
+                print(color)
                 fila.append(sg.Button('', size = (2,2),button_color = ('black',color), pad = (0,0), key = auxKey))
             board.append(fila)
         return board
@@ -226,7 +228,7 @@ def main(nombre = 'Jugador', tema ='Claro', nivel = 'nivel1', tiempo = 3.0):
     atril = ['J1','J2','J3','J4','J5','J6','J7']
 
     #layout del tablero
-    tablero = cargar_tablero(casillasESP) #las casillas especiales se mandarían como parametro para configurar el color de c/u
+    tablero = cargar_tablero(casillasESP,nivel) #las casillas especiales se mandarían como parametro para configurar el color de c/u
 
     #texto con el puntaje de la PC (layout para el frame)
     puntCOM = [
@@ -256,6 +258,10 @@ def main(nombre = 'Jugador', tema ='Claro', nivel = 'nivel1', tiempo = 3.0):
         #atril del jugador
     ]
 
+    frameTiempo = [
+        [sg.Text('', size=(21,1), font=('Timer', 20), justification='center', key='time')]
+    ] #Interfaz del cronometro
+
     #elementos de la derecha de la ventana
     colExtras = [
             [sg.Frame('',frameAtrilCOM,border_width=8)], #atril de la PC
@@ -263,12 +269,10 @@ def main(nombre = 'Jugador', tema ='Claro', nivel = 'nivel1', tiempo = 3.0):
             [sg.Text('')],
             [sg.Text('')],
             [sg.Text('')],
+            [sg.Frame('Tiempo',frameTiempo, title_color='white',background_color='black')],
             [sg.Text('')],
-            [sg.Text('')],
-            [sg.Text('')],
-            [sg.Text('')],
-            [sg.Button('Pausa', size=(20,1), button_color = ('black','white')),sg.Button('Reglas', size=(20,1), button_color = ('black','white'))],
-            [sg.Button('Confirmar Palabra', size=(45,1), button_color = ('black','white'))],
+            [sg.Button('Pausa', size=(23,1), key='pausa', button_color = ('black','white')),sg.Button('Reglas', size=(23,1), pad=(8,0), button_color = ('black','white'))],
+            [sg.Button('Confirmar Palabra', size=(52,1), button_color = ('black','white'))],
             [sg.Text('')],
             [sg.Text('')],
             [sg.Text('')],
@@ -308,6 +312,7 @@ def main(nombre = 'Jugador', tema ='Claro', nivel = 'nivel1', tiempo = 3.0):
         window.Element(aux).Update(text=bolsa[indice])
         del bolsa[indice]
 
+
     posAtril = '' #posicion en el atril de la letra clickeada
     letra = '' #letra clickeada
     palabra = [] #lista de letras colocadas en el turno
@@ -320,8 +325,28 @@ def main(nombre = 'Jugador', tema ='Claro', nivel = 'nivel1', tiempo = 3.0):
     cambioActivado = False #si se están cambiando letras
     a_cambiar = [] #lista de pos de atril a cambiar con mezclar()
 
+    actual_time = 0
+    paused = False
+    start_time = int(round(time.time() * 100))
+
     while True:
-        event, values = window.Read()
+        event, values = window.Read(timeout=10)  #Ni idea que hace el timeout
+        if actual_time == (int(tiempo)*60)*100:       #CENTESIMAS
+            print('aca estoy')
+            paused = True
+        if not paused:
+            actual_time = int(round(time.time() * 100)) - start_time
+        else:
+            event,values = window.Read()
+        if event == 'pausa':
+            if window.Element('pausa').GetText() == 'Pausa':
+                paused = True
+                paused_time = int(round(time.time() * 100))
+                window.Element('pausa').Update(text='Continuar')
+            else:
+                paused = False
+                start_time = start_time + int(round(time.time() * 100)) - paused_time
+                window.Element('pausa').Update(text='Pausa')
         if event is None:
             break
         elif event == 'CAMBIO' and len(palabra) == 0: #solo puedo cambiar letras si no coloqué ninguna en el tablero
@@ -431,6 +456,7 @@ def main(nombre = 'Jugador', tema ='Claro', nivel = 'nivel1', tiempo = 3.0):
                 fichas_desocupadas = [] #reinicio la lista de fichas desocupadas
             palabra = [] #reinicio la lista
             casillas_ocupadas = [] #idem
+        window.FindElement('time').Update('{:02d}:{:02d}'.format((actual_time // 100) // 60,(actual_time // 100) % 60))
 
     window.Close()
 

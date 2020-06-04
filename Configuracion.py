@@ -33,7 +33,7 @@ def main():
 
     game = [
         [sg.Text('Niveles'),sg.Radio('Nivel 1', "nivel", default=True, key='nivel1'),sg.Radio('Nivel 2', "nivel", key='nivel2'), sg.Radio('Nivel 3', "nivel", key='nivel3')],
-        [sg.Text('Tiempo'), sg.Slider(range=(3,20), orientation='horizontal', key='tiempo'),sg.Text('Minutos')]
+        [sg.Text('Tiempo'), sg.Slider(range=(1,20), orientation='horizontal', key='tiempo'),sg.Text('Minutos')]
     ]
 
     conf = [
