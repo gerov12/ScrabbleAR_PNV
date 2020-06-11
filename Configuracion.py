@@ -47,16 +47,19 @@ def main():
     while True:
         event, values = window.Read()
         if event is None:
+            window.Close()
             break
         elif event == 'Confirmar':
             parametros = definir_parametros(values)
             window.Close()
             Tablero.main(*parametros)
+            break
         elif event == 'Volver al menu':
             window.Close()
             Menú.main()
+            break
 
-    window.Close()
+        #los break son para que corte el while y no dé error
 
 if __name__ == '__main__':
     main()

@@ -443,13 +443,17 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
             cant -= 1 #decremento la variable que cuenta las veces que se apreta "Cambiar letras"
         elif event in atril: #si hago click en una letra del atril
             print('entro a atril. cambioActivado: '+str(cambioActivado))
-            if cambioActivado:
-                if event in a_cambiar:
-                    a_cambiar.remove(event)
-                    window.Element(event).Update(button_color = ('black','white'))
+            if cambioActivado: #si estoy cambiando letras
+                if event in a_cambiar: #si ya está seleccionada la letra que elijo
+                    a_cambiar.remove(event) #la elimino de la lista de seleccionadas
+                    window.Element(event).Update(button_color = ('black','white')) #le devuelvo el color original
+                    l = window.Element(event).GetText() #guardo la letra
+                    window.Element(event).Update(image_filename = 'Imagenes/Temas/'+tema.lower()+'/'+l+'_'+tema.lower()+'.png')#le devuelvo la imagen original
                 else:
                     a_cambiar.append(event)
                     window.Element(event).Update(button_color = ('black','grey'))
+                    l = window.Element(event).GetText() #guardo la letra
+                    window.Element(event).Update(image_filename = 'Imagenes/Temas/'+tema.lower()+'BN/'+l+'_'+tema.lower()+'.png') #le coloco la imagen en Blanco y Negro
                 print(a_cambiar)
             else:
                 posAtril = event #guarda la posicion en el atril de la letra clickeada

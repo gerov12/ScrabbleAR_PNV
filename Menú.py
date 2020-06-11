@@ -18,18 +18,21 @@ def main():
     while True:
         event, values = window.Read()
         if event is None or event == 'Salir':
+            window.Close()
             break
         elif event == 'Partida Rápida':
             window.Close()
             Tablero.main('Jugador', 'claro','nivel1',3)
+            break
         # elif event == 'Cargar Partida':
         #     ...
         #     break
         elif event == 'Partida Personalizada':
             window.Close()
             Configuracion.main()
+            break
 
-    window.Close()
+        #los break son para que corte el while y no dé error
 
 if __name__ == '__main__':
     main()
