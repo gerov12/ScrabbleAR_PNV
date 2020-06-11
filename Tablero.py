@@ -40,7 +40,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
             aux_key = aux_key.replace('ú','u')
             dic_spelling[aux_key] = aux_item #guardo en el nuevo diccionario pero sin tilde
 
-    def llenar_bolsa(nivel = 'nivel1'): #carga las cantides para c/ letra segun el nivel ingresado por parametro
+    def llenar_bolsa(nivel): #carga las cantides para c/ letra segun el nivel ingresado por parametro
         #nivel por defecto es el 1
         with open('Archivos/Letras.json','r') as archivo_letras:
             letras = json.load(archivo_letras)
@@ -61,12 +61,12 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
             cas = json.load(archivo_casillas)
         return cas
 
-    def cargar_casillas_especiales(nivel = 'nivel1'):
+    def cargar_casillas_especiales(nivel):
         with open ('Archivos/Especiales.json','r') as archivo_casillas: #falta escribir el archivo Especiales.json
             casillas_esp=json.load(archivo_casillas)
         return casillas_esp[nivel] #devuelve el dic del nivel correspondiente
 
-    def cargar_tablero(casillas_esp, nivel = 'nivel1'): #crea el layout del tablero
+    def cargar_tablero(casillas_esp, nivel): #crea el layout del tablero
         board = []
         for y in range(14,-1,-1): #de 14 a 0 ya que las filas en el layout van en ese orden
             fila = []
@@ -182,7 +182,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
                     posAtril = '' #borro la pos guardada para que no se guarde varias veces en el tablero al clickearlo
                     letra = '' #idem pero con la letra
 
-    def es_palabra(pal, nivel = 'nivel1'): #determina si el conjunto de letras ingresado es una palabra
+    def es_palabra(pal, nivel): #determina si el conjunto de letras ingresado es una palabra
         aux = False
         if not pal.lower() in dic_verbs:
             if pal.lower() in dic_lexicon:
@@ -216,7 +216,9 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
         print('entra a la funcion') #
         total=0
         valor=0 #valor por el que hay que multiplicar la palabra
+        restar=0#valor por el que hay que restar la palabra
         ok=False #si hay casilla multiplicadora de palabra
+        ok2=False#si hay una casilla de resto
         for i in range(len(palabra)):
             print('-'+palabra[i]+'-')
             if casilla[i] in casillas_esp and casilla[i] != '0707': #si es una casilla especial entro
@@ -242,6 +244,11 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
                         print('suma '+str(total)+'+'+str(puntajes[palabra[i]])+' triplicado') #
                         total += puntajes[palabra[i]]*3
                         print('sumó = '+str(total)) #
+                elif casillas_esp[casilla[i]][0] == 'R2':
+                    print('resto '+str(total)+'-'+'2')
+                    total += puntajes[palabra[i]]
+                    print('restó dos puntos')#
+                    restar+=2
             else: #si no es una casilla especial, suma normal
                 print('no es especial') #
                 print('suma '+str(total)+'+'+str(puntajes[palabra[i]])) #
@@ -251,6 +258,9 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
         if ok: #si hay que multiplicar la palabra entera
             print('multiplicó '+str(total)+'*'+str(valor)) #
             total = total*valor
+        if ok2: #si hay que restar puntos
+            print('resto '+str(total)+'-'+str(restar))#
+            total-=restar
         print('suma final: '+str(total)) #
         actual += total #al puntaje actual le agrego el obtenido con la nueva palabra
         return actual
@@ -264,7 +274,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
     cargar_diccionarios(dic_verbs, dic_lexicon, dic_spelling) #modifico las palabras (les quito las tildes)
     bolsa = llenar_bolsa(nivel) #el argumento 3 del programa tiene el nivel elegido
     puntajes = cargar_puntajes()
-    casillasESP = cargar_casillas_especiales() #se le enviaria el nivel por parametro pero falta terminar el json
+    casillasESP = cargar_casillas_especiales(nivel) #se le enviaria el nivel por parametro pero falta terminar el json
 
     #keys de las casillas y las posiciones del atril (se usa para saber dónde clickea el jugador)
     casillas = cargar_casillas()
@@ -286,9 +296,9 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
     #marco con el atril de la PC
     frameAtrilCOM = [
         [sg.Button('',visible=False,key='C1'),sg.Button('',visible=False,key='C2'),sg.Button('',visible=False,key='C3'),sg.Button('',visible=False,key='C4'),sg.Button('',visible=False,key='C5'),sg.Button('',visible=False,key='C6'),
-        sg.Button('',visible=False,key='C7'),sg.Button('',size=(2,2), button_color = ('black','white')),sg.Button('',size=(2,2), button_color = ('black','white')),sg.Button('',size=(2,2), button_color = ('black','white')),
-        sg.Button('',size=(2,2), button_color = ('black','white')),sg.Button('',size=(2,2), button_color = ('black','white')),sg.Button('',size=(2,2), button_color = ('black','white')),
-        sg.Button('',size=(2,2), button_color = ('black','white'))],
+        sg.Button('',visible=False,key='C7'),sg.Button('?',size=(2,2), button_color = ('black','white')),sg.Button('?',size=(2,2), button_color = ('black','white')),sg.Button('?',size=(2,2), button_color = ('black','white')),
+        sg.Button('?',size=(2,2), button_color = ('black','white')),sg.Button('?',size=(2,2), button_color = ('black','white')),sg.Button('?',size=(2,2), button_color = ('black','white')),
+        sg.Button('?',size=(2,2), button_color = ('black','white'))],
         #los botones invisibles (visible=false) guardan las letras del atril de la maquina]
         #y los 7 botones vacios del final son de fachada
     ]
@@ -386,6 +396,13 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
             actual_time = int(round(time.time() * 100)) - start_time
         else:
             event,values = window.Read()
+        if event == 'Reglas':
+            if (nivel == 'nivel1'):
+                sg.Popup("Reglas nivel 1:                                        *Verde -> duplica el valor de la letra                  *Azúl -> triplica el valor de la letra                     *Naranja -> duplica el valor de la palabra                          *Rosa -> triplica el valor de la palabra")
+            elif (nivel == 'nivel2'):
+                sg.Popup("Reglas nivel 2:                                        *Verde -> duplica el valor de la letra                  *Azúl -> triplica el valor de la letra                     *Naranja -> duplica el valor de la palabra                          *Rosa -> triplica el valor de la palabra")
+            else:
+                sg.Popup("Reglas nivel 3:                                        *Verde -> duplica el valor de la letra                  *Azúl <> triplica el valor de la latra                     *Naranja -> duplica el valor de la palabra                          *Rosa -> triplica el valor de la palabra                              *Amarillo -> resta 2 puntos")
         if event == 'pausa':
             if window.Element('pausa').GetText() == 'Pausa':
                 paused = True
