@@ -9,11 +9,11 @@ def main():
         else:
             jug = 'Jugador'
         if values['claro'] == True:
-            tema = 'Claro'
+            tema = 'claro'
         elif values['oscuro'] == True:
-            tema = 'Oscuro'
+            tema = 'oscuro'
         else:
-            tema = 'Madera'
+            tema = 'madera'
         if values['nivel1'] == True:
             level = 'nivel1'
         elif values['nivel2'] == True:

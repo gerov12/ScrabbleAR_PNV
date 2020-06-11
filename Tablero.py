@@ -5,7 +5,7 @@ import pattern.es
 import Menú
 import time
 
-def main(nombre = 'Jugador', tema ='Claro', nivel = 'nivel1', tiempo = 3.0):
+def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
     def llenar_bolsa(nivel = 'nivel1'): #carga las cantides para c/ letra segun el nivel ingresado por parametro
         #nivel por defecto es el 1
         with open('Letras.json','r') as archivo_letras:
@@ -50,7 +50,6 @@ def main(nombre = 'Jugador', tema ='Claro', nivel = 'nivel1', tiempo = 3.0):
                     color = casillas_esp[nivel][auxKey][1] #si es una casilla especial le coloco el color correspondiente
                 else:
                     color = 'white'
-                print(color)
                 fila.append(sg.Button('', size = (2,2),button_color = ('black',color), pad = (0,0), key = auxKey))
             board.append(fila)
         return board
@@ -75,11 +74,15 @@ def main(nombre = 'Jugador', tema ='Claro', nivel = 'nivel1', tiempo = 3.0):
         for i in datos:
             pos = random.randrange(len(bolsa))
             window.FindElement(i).Update(text=bolsa[pos])
+            let = window.Element(i).GetText() #guardo la letra que acabo de colocar en el atril
+            window.Element(i).Update(image_filename = 'Imagenes/Temas/'+tema+'/'+let+'_'+tema+'.png') #le coloco la imagen correspondiente al botón
             del bolsa[pos]
 
     def colocar_letra(casilla, posA, let, pal, fichas_desocupadas, casillas_ocupadas): #pone la letra en la casilla correspondiente y la saca del atril
         window.Element(casilla).Update(text=let) #pongo la letra "let" como texto de la "casilla" clickeada
+        window.Element(casilla).Update(image_filename = 'Imagenes/Temas/'+tema+'/'+let+'_'+tema+'.png') #le coloco la imagen correspondiente al botón
         window.Element(posA).Update(text='') #la elimino del atril (reemplazandola por '')
+        window.Element(posA).Update(image_filename = 'Imagenes/Temas/invisible.png') #elimino la imagen del atril
         palabra.append(let) #guardo la letra en la lista de letras para luego verificar si es una palabra
         fichas_desocupadas.append(posA) #guardo la pos del atril desocupada para luego devolver o colocar letras
         casillas_ocupadas.append(casilla) #guardo la key de la casilla ocupada en la lista
@@ -170,7 +173,9 @@ def main(nombre = 'Jugador', tema ='Claro', nivel = 'nivel1', tiempo = 3.0):
             pos = random.randrange(len(casillas_ocupadas)) #elijo una casilla ocupada al azar
             letter = window.FindElement(casillas_ocupadas[pos]).GetText() #guardo la letra de la pos
             window.FindElement(casillas_ocupadas[pos]).Update(text = '') #elimino la letra de la pos
+            window.FindElement(casillas_ocupadas[pos]).Update(image_filename = 'Imagenes/Temas/invisible.png') #elimino la imagen de la pos
             window.FindElement(fichas_desocupadas[i]).Update(text=letter)  #coloco la letra en la casilla
+            window.FindElement(fichas_desocupadas[i]).Update(image_filename='Imagenes/Temas/'+tema+'/'+letter+'_'+tema+'.png')  #coloco la letra en la casilla
             del casillas_ocupadas[pos] #quito la casilla que acabo de "limpiar" de la lista de casillas ocupadas
 
     def sumar_puntos (puntajes,casillas_esp,palabra,casilla,actual): #suma al total los puntos de la palabra ingresada
@@ -304,12 +309,16 @@ def main(nombre = 'Jugador', tema ='Claro', nivel = 'nivel1', tiempo = 3.0):
         aux = 'C'+str(i) #aux es la key de la pos del atril de la Computadora a actualizar
         indice = random.randrange(len(bolsa)) #tomo una letra random de la bolsa de letras
         window.Element(aux).Update(text=bolsa[indice]) #la pongo como texto del boton correspondiente
+        let = window.Element(aux).GetText() #guardo la letra que acabo de colocar en el atril
+        window.Element(aux).Update(image_filename = 'Imagenes/Temas/'+tema+'/'+let+'_'+tema+'.png') #le coloco la imagen correspondiente al botón
         del bolsa[indice] #la elimino de la bolsa
 
     for i in range(1,8): #lo mismo pero para el atril del Jugador
         aux = 'J'+str(i)
         indice = random.randrange(len(bolsa))
         window.Element(aux).Update(text=bolsa[indice])
+        let = window.Element(aux).GetText() #guardo la letra que acabo de colocar en el atril
+        window.Element(aux).Update(image_filename = 'Imagenes/Temas/'+tema+'/'+let+'_'+tema+'.png') #le coloco la imagen correspondiente al botón
         del bolsa[indice]
 
 

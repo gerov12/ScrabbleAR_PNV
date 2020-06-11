@@ -6,7 +6,7 @@ def main():
     sg.ChangeLookAndFeel('DarkAmber')
 
     layout = [
-        [sg.Image(filename = "TituloScrabble1.png", size=(400,200))],
+        [sg.Image(filename = "Imagenes/TituloScrabble1.png", size=(400,200))],
         [sg.Button('Partida Rápida', size = (30, 2), pad=(90,4))],
         [sg.Button('Cargar Partida', size = (30, 2), pad=(90,4))],
         [sg.Button('Partida Personalizada', size = (30, 2), pad=(90,4))],
@@ -21,7 +21,7 @@ def main():
             break
         elif event == 'Partida Rápida':
             window.Close()
-            Tablero.main('Jugador', 'Claro','nivel1',3)
+            Tablero.main('Jugador', 'claro','nivel1',3)
         # elif event == 'Cargar Partida':
         #     ...
         #     break
