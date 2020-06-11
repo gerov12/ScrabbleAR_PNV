@@ -8,7 +8,7 @@ import time
 def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
     def llenar_bolsa(nivel = 'nivel1'): #carga las cantides para c/ letra segun el nivel ingresado por parametro
         #nivel por defecto es el 1
-        with open('Letras.json','r') as archivo_letras:
+        with open('Archivos/Letras.json','r') as archivo_letras:
             letras = json.load(archivo_letras)
             letrasN = letras[nivel] #toma el diccionario de letras:cantidades del nivel correspondiente
             bolsa = [] #bolsa de letras para repartir a los jugadores
@@ -18,17 +18,17 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
         return bolsa
 
     def cargar_puntajes(): #carga los puntajes para c/ letra
-        with open('Puntajes.json','r') as archivo_puntajes:
+        with open('Archivos/Puntajes.json','r') as archivo_puntajes:
             puntajes = json.load(archivo_puntajes)
         return puntajes
 
     def cargar_casillas(): #carga las keys de las casillas del tablero
-        with open('Casillas.json','r') as archivo_casillas:
+        with open('Archivos/Casillas.json','r') as archivo_casillas:
             cas = json.load(archivo_casillas)
         return cas
 
     def cargar_casillas_especiales(nivel = 'nivel1'):
-        with open ('Especiales.json','r') as archivo_casillas: #falta escribir el archivo Especiales.json
+        with open ('Archivos/Especiales.json','r') as archivo_casillas: #falta escribir el archivo Especiales.json
             casillas_esp=json.load(archivo_casillas)
         return casillas_esp#[nivel] #devuelve el dic del nivel correspondiente
 
@@ -75,12 +75,12 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
             pos = random.randrange(len(bolsa))
             window.FindElement(i).Update(text=bolsa[pos])
             let = window.Element(i).GetText() #guardo la letra que acabo de colocar en el atril
-            window.Element(i).Update(image_filename = 'Imagenes/Temas/'+tema+'/'+let+'_'+tema+'.png') #le coloco la imagen correspondiente al botón
+            window.Element(i).Update(image_filename = 'Imagenes/Temas/'+tema.lower()+'/'+let+'_'+tema.lower()+'.png') #le coloco la imagen correspondiente al botón
             del bolsa[pos]
 
     def colocar_letra(casilla, posA, let, pal, fichas_desocupadas, casillas_ocupadas): #pone la letra en la casilla correspondiente y la saca del atril
         window.Element(casilla).Update(text=let) #pongo la letra "let" como texto de la "casilla" clickeada
-        window.Element(casilla).Update(image_filename = 'Imagenes/Temas/'+tema+'/'+let+'_'+tema+'.png') #le coloco la imagen correspondiente al botón
+        window.Element(casilla).Update(image_filename = 'Imagenes/Temas/'+tema.lower()+'/'+let+'_'+tema.lower()+'.png') #le coloco la imagen correspondiente al botón
         window.Element(posA).Update(text='') #la elimino del atril (reemplazandola por '')
         window.Element(posA).Update(image_filename = 'Imagenes/Temas/invisible.png') #elimino la imagen del atril
         palabra.append(let) #guardo la letra en la lista de letras para luego verificar si es una palabra
@@ -175,7 +175,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
             window.FindElement(casillas_ocupadas[pos]).Update(text = '') #elimino la letra de la pos
             window.FindElement(casillas_ocupadas[pos]).Update(image_filename = 'Imagenes/Temas/invisible.png') #elimino la imagen de la pos
             window.FindElement(fichas_desocupadas[i]).Update(text=letter)  #coloco la letra en la casilla
-            window.FindElement(fichas_desocupadas[i]).Update(image_filename='Imagenes/Temas/'+tema+'/'+letter+'_'+tema+'.png')  #coloco la letra en la casilla
+            window.FindElement(fichas_desocupadas[i]).Update(image_filename='Imagenes/Temas/'+tema.lower()+'/'+letter+'_'+tema.lower()+'.png')  #coloco la letra en la casilla
             del casillas_ocupadas[pos] #quito la casilla que acabo de "limpiar" de la lista de casillas ocupadas
 
     def sumar_puntos (puntajes,casillas_esp,palabra,casilla,actual): #suma al total los puntos de la palabra ingresada
@@ -310,7 +310,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
         indice = random.randrange(len(bolsa)) #tomo una letra random de la bolsa de letras
         window.Element(aux).Update(text=bolsa[indice]) #la pongo como texto del boton correspondiente
         let = window.Element(aux).GetText() #guardo la letra que acabo de colocar en el atril
-        window.Element(aux).Update(image_filename = 'Imagenes/Temas/'+tema+'/'+let+'_'+tema+'.png') #le coloco la imagen correspondiente al botón
+        window.Element(aux).Update(image_filename = 'Imagenes/Temas/'+tema.lower()+'/'+let+'_'+tema.lower()+'.png') #le coloco la imagen correspondiente al botón
         del bolsa[indice] #la elimino de la bolsa
 
     for i in range(1,8): #lo mismo pero para el atril del Jugador
@@ -318,7 +318,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
         indice = random.randrange(len(bolsa))
         window.Element(aux).Update(text=bolsa[indice])
         let = window.Element(aux).GetText() #guardo la letra que acabo de colocar en el atril
-        window.Element(aux).Update(image_filename = 'Imagenes/Temas/'+tema+'/'+let+'_'+tema+'.png') #le coloco la imagen correspondiente al botón
+        window.Element(aux).Update(image_filename = 'Imagenes/Temas/'+tema.lower()+'/'+let+'_'+tema.lower()+'.png') #le coloco la imagen correspondiente al botón
         del bolsa[indice]
 
 
