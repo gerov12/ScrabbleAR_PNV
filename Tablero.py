@@ -371,6 +371,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
     totalCOM = 0 #puntos de la PC
     cambioActivado = False #si se están cambiando letras
     a_cambiar = [] #lista de pos de atril a cambiar con mezclar()
+    cant=0 #cantidad de veces que apreta "Cambiar letras"
 
     actual_time = 0
     paused = False
@@ -397,7 +398,12 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
         if event is None:
             break
         elif event == 'CAMBIO' and len(palabra) == 0: #solo puedo cambiar letras si no coloqué ninguna en el tablero
-            activar() #hago utilizables los botones de cambio
+            cant += 1 #incremento la variable que cuenta las veces que se apreta "Cambiar letras"
+            if cant <= 3:
+                activar() #hago utilizables los botones de cambio
+            else:
+                sg.PopupNoButtons('Esta función ya no esta disponible',button_color=('white','black'),
+                auto_close=True,auto_close_duration=4,no_titlebar=True)
         elif event == 'TODAS': #cambia todas las letras del atril
             mezclar(atril, bolsa)
             desactivar() #hago invisibles los botones de cambio
@@ -434,6 +440,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
             window.Element('ALGUNAS').Update(disabled = False) #activo el botón que acabo de apretar
         elif event == 'CANCEL': #cancelo el cambio de letras y vuelvo a la funcionalidad normal del atril
             desactivar()
+            cant -= 1 #decremento la variable que cuenta las veces que se apreta "Cambiar letras"
         elif event in atril: #si hago click en una letra del atril
             print('entro a atril. cambioActivado: '+str(cambioActivado))
             if cambioActivado:
@@ -483,7 +490,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
                         fichas_desocupadas = [] #reinicio la lista de fichas desocupadas
                         inicial = False #desactivo la variable que indica que la palabra inicial aún no se colocó
                     else: #si está desocupada
-                        sg.Popup("Error", "Una letra debe ocupar la casilla inicial") #informo el error
+                        sg.PopupNoButtons("Una letra debe ocupar la casilla inicial", auto_close=True,auto_close_duration=4,no_titlebar=True) #informo el error
                         devolver(fichas_desocupadas, casillas_ocupadas) #devuelve las letras al atril
                         fichas_desocupadas = [] #reinicio la lista de fichas desocupadas
                 else: #si no es la palabra incial prosigo normalmente
