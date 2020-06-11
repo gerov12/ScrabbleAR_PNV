@@ -6,6 +6,40 @@ import Menú
 import time
 
 def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
+    def cargar_diccionarios(dic_verbs, dic_lexicon, dic_spelling):
+        for pal in pattern.es.verbs.keys():
+            aux = []
+            aux.append(pal.lower()) #guardo la key
+            for p in pattern.es.verbs[pal]:
+                aux.append(p.lower()) #guardo las conjugaciones de la key
+            for i in aux: #le quito la tilde a todas las palabras que guardé
+                i = i.replace('á','a')
+                i = i.replace('é','e')
+                i = i.replace('í','i')
+                i = i.replace('ó','o')
+                i = i.replace('ú','u')
+                dic_verbs.append(i) #guardo cada palabra sin tilde en la lista de verbos
+
+        for pal in pattern.es.lexicon.keys():
+            aux_item = pattern.es.lexicon[pal] #guardo el contenido de la key
+            aux_key = pal.lower() #guardo la key
+            aux_key = aux_key.replace('á','a')
+            aux_key = aux_key.replace('é','e')
+            aux_key = aux_key.replace('í','i')
+            aux_key = aux_key.replace('ó','o')
+            aux_key = aux_key.replace('ú','u')
+            dic_lexicon[aux_key] = aux_item #guardo en el nuevo diccionario pero sin tilde
+
+        for pal in pattern.es.spelling.keys(): #idem
+            aux_item = pattern.es.spelling[pal] #guardo el contenido de la key
+            aux_key = pal.lower() #guardo la key
+            aux_key = aux_key.replace('á','a')
+            aux_key = aux_key.replace('é','e')
+            aux_key = aux_key.replace('í','i')
+            aux_key = aux_key.replace('ó','o')
+            aux_key = aux_key.replace('ú','u')
+            dic_spelling[aux_key] = aux_item #guardo en el nuevo diccionario pero sin tilde
+
     def llenar_bolsa(nivel = 'nivel1'): #carga las cantides para c/ letra segun el nivel ingresado por parametro
         #nivel por defecto es el 1
         with open('Archivos/Letras.json','r') as archivo_letras:
@@ -30,7 +64,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
     def cargar_casillas_especiales(nivel = 'nivel1'):
         with open ('Archivos/Especiales.json','r') as archivo_casillas: #falta escribir el archivo Especiales.json
             casillas_esp=json.load(archivo_casillas)
-        return casillas_esp#[nivel] #devuelve el dic del nivel correspondiente
+        return casillas_esp[nivel] #devuelve el dic del nivel correspondiente
 
     def cargar_tablero(casillas_esp, nivel = 'nivel1'): #crea el layout del tablero
         board = []
@@ -46,8 +80,8 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
                     auxKey = auxKey+'0'+str(y) #si el valor de la coordenada y es de un solo digito le agrego un 0 adelante
                 else:
                     auxKey = auxKey+str(y)
-                if auxKey in casillas_esp[nivel]:
-                    color = casillas_esp[nivel][auxKey][1] #si es una casilla especial le coloco el color correspondiente
+                if auxKey in casillas_esp:
+                    color = casillas_esp[auxKey][1] #si es una casilla especial le coloco el color correspondiente
                 else:
                     color = 'white'
                 fila.append(sg.Button('', size = (2,2),button_color = ('black',color), pad = (0,0), key = auxKey))
@@ -150,11 +184,11 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
 
     def es_palabra(pal, nivel = 'nivel1'): #determina si el conjunto de letras ingresado es una palabra
         aux = False
-        if not pal.lower() in pattern.es.verbs:
-            if pal.lower() in pattern.es.lexicon:
+        if not pal.lower() in dic_verbs:
+            if pal.lower() in dic_lexicon:
                 print(pal + " en lexicon")
                 aux = True
-                if pal.lower() in pattern.es.spelling:
+                if pal.lower() in dic_spelling:
                     print(pal + " en spelling")
                     aux = True
         else:
@@ -224,6 +258,10 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
 
     sg.ChangeLookAndFeel('DarkAmber')
 
+    dic_verbs = [] #lista con todos los verbos (infinitivos + conjugaciones) modificados (sin tildes)
+    dic_lexicon = {}  #diccionario de pattern modificado (sin tildes)
+    dic_spelling = {} #diccionario de pattern modificado (sin tildes)
+    cargar_diccionarios(dic_verbs, dic_lexicon, dic_spelling) #modifico las palabras (les quito las tildes)
     bolsa = llenar_bolsa(nivel) #el argumento 3 del programa tiene el nivel elegido
     puntajes = cargar_puntajes()
     casillasESP = cargar_casillas_especiales() #se le enviaria el nivel por parametro pero falta terminar el json
