@@ -184,23 +184,30 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
 
     def es_palabra(pal, nivel): #determina si el conjunto de letras ingresado es una palabra
         aux = False
+        donde = [] #guarda en dónde se encontró la palabra
         if not pal.lower() in dic_verbs:
             if pal.lower() in dic_lexicon:
                 print(pal + " en lexicon")
                 aux = True
+                donde.append('lexicon') #la encontré en lexicon
                 if pal.lower() in dic_spelling:
                     print(pal + " en spelling")
                     aux = True
+                    donde.append('spelling') #la encontré en spelling
         else:
             print(pal + " en verbs")
             aux = True
-        if nivel == 'nivel1':
-            return aux
-        # elif nivel == 'nivel2':
-        #     si es verbo y aux true
-        #     retorna true
-        # elif nivel =='nivel3':
-        #     ...
+            donde.append('verbs') #la encontré en verbos
+        if aux:
+            if nivel == 'nivel1':
+                return True
+            elif nivel == 'nivel2':
+                if 'verbs' in donde:
+                    return True
+                else:
+                    return False
+            # elif nivel =='nivel3':
+            #     ...
 
     def devolver(fichas_desocupadas, casillas_ocupadas): #devuelve las letras al atril en caso de que una palabra sea incorrecta
         for i in range(len(fichas_desocupadas)):
@@ -245,10 +252,12 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
                         total += puntajes[palabra[i]]*3
                         print('sumó = '+str(total)) #
                 elif casillas_esp[casilla[i]][0] == 'R2':
-                    print('resto '+str(total)+'-'+'2')
+                    print('suma '+str(total)+'+'+str(puntajes[palabra[i]])) #
+                    print('restará = '+str(restar)+' + 2') #
                     total += puntajes[palabra[i]]
-                    print('restó dos puntos')#
+                    print('sumó = '+str(total)) #
                     restar+=2
+                    ok2 = True
             else: #si no es una casilla especial, suma normal
                 print('no es especial') #
                 print('suma '+str(total)+'+'+str(puntajes[palabra[i]])) #
@@ -390,7 +399,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
     while True:
         event, values = window.Read(timeout=10)  #Ni idea que hace el timeout
         if actual_time == (int(tiempo)*60)*100:       #CENTESIMAS
-            print('aca estoy')
+            print('Terminó del Tiempo') #
             paused = True
         if not paused:
             actual_time = int(round(time.time() * 100)) - start_time
@@ -398,11 +407,11 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
             event,values = window.Read()
         if event == 'Reglas':
             if (nivel == 'nivel1'):
-                sg.Popup("Reglas nivel 1:                                        *Verde -> duplica el valor de la letra                  *Azúl -> triplica el valor de la letra                     *Naranja -> duplica el valor de la palabra                          *Rosa -> triplica el valor de la palabra")
+                sg.Popup("Reglas nivel 1:                                        *Verde -> duplica el valor de la letra                  *Azúl -> triplica el valor de la letra                     *Naranja -> duplica el valor de la palabra                          *Rosa -> triplica el valor de la palabra",no_titlebar=True)
             elif (nivel == 'nivel2'):
-                sg.Popup("Reglas nivel 2:                                        *Verde -> duplica el valor de la letra                  *Azúl -> triplica el valor de la letra                     *Naranja -> duplica el valor de la palabra                          *Rosa -> triplica el valor de la palabra")
+                sg.Popup("Reglas nivel 2:                                        *Verde -> duplica el valor de la letra                  *Azúl -> triplica el valor de la letra                     *Naranja -> duplica el valor de la palabra                          *Rosa -> triplica el valor de la palabra                              *Amarillo -> resta 2 puntos",no_titlebar=True)
             else:
-                sg.Popup("Reglas nivel 3:                                        *Verde -> duplica el valor de la letra                  *Azúl <> triplica el valor de la latra                     *Naranja -> duplica el valor de la palabra                          *Rosa -> triplica el valor de la palabra                              *Amarillo -> resta 2 puntos")
+                sg.Popup("Reglas nivel 3:                                        *Verde -> duplica el valor de la letra                  *Azúl -> triplica el valor de la latra                     *Naranja -> duplica el valor de la palabra                          *Rosa -> triplica el valor de la palabra                              *Amarillo -> resta 2 puntos",no_titlebar=True)
         if event == 'pausa':
             if window.Element('pausa').GetText() == 'Pausa':
                 paused = True
@@ -415,7 +424,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
         if event is None:
             break
         elif event == 'CAMBIO' and len(palabra) == 0: #solo puedo cambiar letras si no coloqué ninguna en el tablero
-            cant += 1 #incremento la variable que cuenta las veces que se apreta "Cambiar letras"
+            cant += 1 #incremento la variable que cuenta las veces que se apretó "Cambiar letras"
             if cant <= 3:
                 activar() #hago utilizables los botones de cambio
             else:
@@ -499,7 +508,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
             orientacion = ''
             word = ''.join(letra for letra in palabra) #junto las letras colocadas
             print(word)
-            if es_palabra(word) and len(word)>=2: #ya que lexicon y spelling toman como palabras a las letras individuales
+            if es_palabra(word, nivel) and len(word)>=2: #ya que lexicon y spelling toman como palabras a las letras individuales
                 if inicial: #si la palabra que coloqué es la primera del juego
                     if '0707' in casillas_ocupadas: #si la casilla inicial está ocupada
                         print('entra con puntos : ' + str(totalJUG)) #
