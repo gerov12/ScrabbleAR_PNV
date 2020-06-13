@@ -105,12 +105,18 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
             window.Element(i).Update(disabled = False) #activo los clicks en el atril
 
     def mezclar(datos, bolsa): #cambia las letras en 'datos' por letras al azar de la bolsa
-        for i in datos:
-            pos = random.randrange(len(bolsa))
-            window.FindElement(i).Update(text=bolsa[pos])
-            let = window.Element(i).GetText() #guardo la letra que acabo de colocar en el atril
-            window.Element(i).Update(image_filename = 'Imagenes/Temas/'+tema.lower()+'/'+let+'_'+tema.lower()+'.png') #le coloco la imagen correspondiente al botón
-            del bolsa[pos]
+        if len(bolsa) >= len(datos): #si tengo 7 o mas elementos en la bolsa, entro
+            for i in datos:
+                pos = random.randrange(len(bolsa))
+                window.FindElement(i).Update(text=bolsa[pos])
+                let = window.Element(i).GetText() #guardo la letra que acabo de colocar en el atril
+                window.Element(i).Update(image_filename = 'Imagenes/Temas/'+tema.lower()+'/'+let+'_'+tema.lower()+'.png') #le coloco la imagen correspondiente al botón
+                del bolsa[pos]
+            return True #Si cambio las letras
+        elif len(bolsa) < len(datos):
+            sg.PopupNoButtons('Solo se pueden cambiar '+str(len(bolsa))+' letras.',auto_close=True,auto_close_duration=3,no_titlebar=True)
+        else:
+            sg.PopupNoButtons('No quedan letras en la bolsa',auto_close=True,auto_close_duration=3,no_titlebar=True)
 
     def colocar_letra(casilla, posA, let, pal, fichas_desocupadas, casillas_ocupadas): #pone la letra en la casilla correspondiente y la saca del atril
         window.Element(casilla).Update(text=let) #pongo la letra "let" como texto de la "casilla" clickeada
@@ -120,8 +126,9 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
         palabra.append(let) #guardo la letra en la lista de letras para luego verificar si es una palabra
         fichas_desocupadas.append(posA) #guardo la pos del atril desocupada para luego devolver o colocar letras
         casillas_ocupadas.append(casilla) #guardo la key de la casilla ocupada en la lista
+        return casilla #la pos donde se coloca la letra
 
-    def consecutivo(casilla): #indica si la casilla seleccionada es consecutivo a la letra anteriormente colocada
+    def consecutivo(casilla,anterior): #indica si la casilla seleccionada es consecutivo a la letra anteriormente colocada
         aux = False
         orient = ''
         izquierda = str((int(casilla[0:2])-1))+casilla[2:4] #(el primer digito-1)+el segundo digito (es decir la casilla de la izquierda)
@@ -129,58 +136,65 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
         if izquierda[0]!='-': #si el primer digito de "izquierda" no es '-' (es decir que no elegí una casilla de la columna 0)
             if len(izquierda)<4: #si el valor de x queda de un solo digito
                 izquierda = '0'+izquierda #le agrego un 0 adelante para que respete el formato de las keys de las casillas
-            if window.Element(izquierda).GetText() != '': #si el elemento de la izquierda no está vacío
-                aux = True #elegí una casilla consecutiva a la primer letra
-                orient = 'Horizontal' #y comencé a armar la palabra de manera horizontal
-                return [aux, orient]
+            if (int(anterior[0:2]) == int(casilla[0:2])-1) and (int(anterior[2:4]) == int(casilla[2:4])): #verifico que sea consecutivo a la letra anterior
+                if window.Element(izquierda).GetText() != '': #si el elemento de la izquierda no está vacío
+                    aux = True #elegí una casilla consecutiva a la primer letra
+                    orient = 'Horizontal' #y comencé a armar la palabra de manera horizontal
+                    return [aux, orient]
         if int(arriba[2:4])<15: #si no elegí una casilla correcta para la orientacion horizontal chequeo si es vertical
         #si el sgundo digito de la casilla de arriba es menor a 4 (es decir que no elegí una casilla de la fila 3)
         #(el 4 mas adelante debería cambiarse por la altura del tablero)
             if len(arriba)<4: #si el valor de y queda de n digito
                 arriba = arriba[0:2]+'0'+arriba[2] #le agrego un 0 adelante
-            if window.Element(arriba).GetText() != '': #si el elemento de arriba no está vacío
-                aux = True #elegí una casilla consecutiva a la primer letra
-                orient = 'Vertical' #y comencé a armar la palabra de manera vertical
-                return [aux, orient]
+            if int(anterior[0:2]) == int(casilla[0:2]) and int(anterior[2:4]) == int(casilla[2:4])+1:
+                if window.Element(arriba).GetText() != '': #si el elemento de arriba no está vacío
+                    aux = True #elegí una casilla consecutiva a la primer letra
+                    orient = 'Vertical' #y comencé a armar la palabra de manera vertical
+                    return [aux, orient]
         return [aux, orient] #devuelve Flase y ''
 
-    def orientada(casilla, orient): #indica si seleccione una casilla correcta según la orientacion definida
+    def orientada(casilla, orient,anterior): #indica si seleccione una casilla correcta según la orientacion definida
         aux = False
         if orient == 'Horizontal': #si la orientacion es horizontal hago el chequeo correspondiente
             izquierda = str((int(casilla[0:2])-1))+casilla[2:4]
             if izquierda[0]!='-':
                 if len(izquierda)<4: #si el valor de x queda de un solo digito
                     izquierda = '0'+izquierda #le agrego un 0 adelante para que respete el formato de las keys de las casillas
-                if window.Element(izquierda).GetText() != '':
-                    aux = True
+                if (int(anterior[0:2]) == int(casilla[0:2])-1) and (int(anterior[2:4]) == int(casilla[2:4])): #verifico que sea consecutivo a la letra anterior
+                    if window.Element(izquierda).GetText() != '':
+                        aux = True
         elif orient == 'Vertical': #si la orientacion es vertical hago el chequeo correspondiente
             arriba = casilla[0:2]+str((int(casilla[2:4])+1))
             if int(arriba[2:4])<15:
                 if len(arriba)<4: #si el valor de y queda de n digito
                     arriba = arriba[0:2]+'0'+arriba[2] #le agrego un 0 adelante
-                if window.Element(arriba).GetText() != '':
-                    aux = True
+                if int(anterior[0:2]) == int(casilla[0:2]) and int(anterior[2:4]) == int(casilla[2:4])+1:
+                    if window.Element(arriba).GetText() != '':
+                        aux = True
         return aux
 
-    def chequear_casilla(letra, palabra, event, posAtril, orientacion):
-        if letra != '': #si previamente clickee una letra del atril
-            if len(palabra) == 0: #si es la primer letra de la palabra
-                colocar_letra(event, posAtril, letra, palabra)
-                posAtril = '' #borro la pos guardada para que no se guarde varias veces en el tablero al clickearlo
-                letra = '' #idem pero con la letra
-            elif len(palabra) == 1: #si es la segunda letra de la palabra
-                resultado = consecutivo(event)
-                if resultado[0]: #si la casilla (event) seleccionada es consecutivo a la letra anteriormente colocada
-                    orientacion = resultado[1] #guardo la orientacion
-                    colocar_letra(event, posAtril, letra, palabra) #coloco la letra en la casilla
-                    posAtril = '' #borro la pos guardada para que no se guarde varias veces en el tablero al clickearlo
-                    letra = '' #idem pero con la letra
-                    print(orientacion)
-            elif len(palabra) > 1: #si es la letra 3 o mayor (ya está definida la orientacion)
-                if orientada(event, orientacion): #si la casilla es consecutiva según la orientación definida
-                    colocar_letra(event, posAtril, letra, palabra) #coloco la letra en la casilla
-                    posAtril = '' #borro la pos guardada para que no se guarde varias veces en el tablero al clickearlo
-                    letra = '' #idem pero con la letra
+    # def chequear_casilla(letra, palabra, event, posAtril, orientacion,fichas_desocupadas,casillas_ocupadas):
+    #     if letra != '': #si previamente clickee una letra del atril
+    #         if len(palabra) == 0: #si es la primer letra de la palabra
+    #             colocar_letra(event, posAtril, letra, palabra, fichas_desocupadas, casillas_ocupadas) #coloco la letra en la casilla
+    #             posAtril = '' #borro la pos guardada para que no se guarde varias veces en el tablero al clickearlo
+    #             letra = '' #idem pero con la letra
+    #         elif len(palabra) == 1: #si es la segunda letra de la palabra
+    #             resultado = consecutivo(event)
+    #             if resultado[0]: #si la casilla (event) seleccionada es consecutivo a la letra anteriormente colocada
+    #                 orientacion = resultado[1] #guardo la orientacion
+    #                 colocar_letra(event, posAtril, letra, palabra, fichas_desocupadas, casillas_ocupadas) #coloco la letra en la casilla
+    #                 posAtril = '' #borro la pos guardada para que no se guarde varias veces en el tablero al clickearlo
+    #                 letra = '' #idem pero con la letra
+    #                 print(orientacion) #
+    #         elif len(palabra) > 1: #si es la letra 3 o mayor (ya está definida la orientacion)
+    #             if orientada(event, orientacion): #si la casilla es consecutiva según la orientación definida
+    #                 colocar_letra(event, posAtril, letra, palabra, fichas_desocupadas, casillas_ocupadas) #coloco la letra en la casilla
+    #                 posAtril = '' #borro la pos guardada para que no se guarde varias veces en el tablero al clickearlo
+    #                 letra = '' #idem pero con la letra
+    #             else:
+    #                 print('a')
+
 
     def es_palabra(pal, nivel): #determina si el conjunto de letras ingresado es una palabra
         aux = False
@@ -390,7 +404,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
     totalCOM = 0 #puntos de la PC
     cambioActivado = False #si se están cambiando letras
     a_cambiar = [] #lista de pos de atril a cambiar con mezclar()
-    cant=0 #cantidad de veces que apreta "Cambiar letras"
+    cant=1 #cantidad de veces que apreta "Cambiar letras"
 
     actual_time = 0
     paused = False
@@ -424,14 +438,13 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
         if event is None:
             break
         elif event == 'CAMBIO' and len(palabra) == 0: #solo puedo cambiar letras si no coloqué ninguna en el tablero
-            cant += 1 #incremento la variable que cuenta las veces que se apretó "Cambiar letras"
-            if cant <= 3:
+            if cant <=3:
                 activar() #hago utilizables los botones de cambio
             else:
-                sg.PopupNoButtons('Esta función ya no esta disponible',button_color=('white','black'),
-                auto_close=True,auto_close_duration=4,no_titlebar=True)
+                sg.PopupNoButtons('Esta función ya no esta disponible',auto_close=True,auto_close_duration=4,no_titlebar=True)
         elif event == 'TODAS': #cambia todas las letras del atril
-            mezclar(atril, bolsa)
+            if mezclar(atril, bolsa):
+                cant += 1 #incremento la variable que cuenta las veces que se apretó "Cambiar letras"
             desactivar() #hago invisibles los botones de cambio
         elif event == 'ALGUNAS': #cambia letras especificas del atril (elif auxiliares abajo)
             window.Element('OK').Update(visible = True) #hago visibles los botones para cambiar algunas letras
@@ -444,9 +457,13 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
             window.Element('ALGUNAS').Update(disabled = True) #desactivo el botón que acabo de apretar
         elif event == 'OK': #cambia las letras seleccionadas
             if len(a_cambiar)>0: #si seleccioné letras
-                mezclar(a_cambiar, bolsa)
-                for i in a_cambiar:
-                    window.Element(i).Update(button_color = ('black','white')) #vuelve a poner en blanco a todas las letras del atril
+                if mezclar(a_cambiar, bolsa):
+                    cant += 1 #incremento la variable que cuenta las veces que se apretó "Cambiar letras"
+                else:
+                    for i in a_cambiar:
+                        window.Element(i).Update(button_color = ('black','white')) #vuelve a poner en blanco a todas las letras del atril
+                        l = window.Element(i).GetText() #guardo la letra
+                        window.Element(i).Update(image_filename = 'Imagenes/Temas/'+tema.lower()+'/'+l+'_'+tema.lower()+'.png') #le coloco la imagen original
                 a_cambiar = []
                 desactivar() #hago utilizables los botones de cambio
                 cambioActivado = False #desactivo el cambio para que el atril vuelva a funcionar con normalidad
@@ -460,6 +477,8 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
             cambioActivado = False #desactivo cambio activado
             for i in a_cambiar:
                 window.Element(i).Update(button_color = ('black','white')) #vuelve a poner en blanco a todas las letras del atril
+                l = window.Element(i).GetText() #guardo la letra
+                window.Element(i).Update(image_filename = 'Imagenes/Temas/'+tema.lower()+'/'+l+'_'+tema.lower()+'.png') #le coloco la imagen original
             a_cambiar = [] #vacío la lista de fichas a cambiar
             for i in atril:
                 window.Element(i).Update(disabled = True) #desactivo los clicks en el atril
@@ -487,23 +506,22 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
         elif event in casillas:#si hago click en una casilla del tablero
             if letra != '': #si previamente clickee una letra del atril
                 if len(palabra) == 0: #si es la primer letra de la palabra
-                    colocar_letra(event, posAtril, letra, palabra, fichas_desocupadas, casillas_ocupadas) #coloco la letra en la casilla
+                    anterior = colocar_letra(event, posAtril, letra, palabra, fichas_desocupadas, casillas_ocupadas) #coloco la letra en la casilla
                     posAtril = '' #borro la pos guardada para que no se guarde varias veces en el tablero al clickearlo
                     letra = '' #idem pero con la letra
                 elif len(palabra) == 1: #si es la segunda letra de la palabra
-                    resultado = consecutivo(event)
+                    resultado = consecutivo(event,anterior)
                     if resultado[0]: #si la casilla (event) seleccionada es consecutivo a la letra anteriormente colocada
                         orientacion = resultado[1] #guardo la orientacion
-                        colocar_letra(event, posAtril, letra, palabra, fichas_desocupadas, casillas_ocupadas) #coloco la letra en la casilla
+                        anterior = colocar_letra(event, posAtril, letra, palabra, fichas_desocupadas, casillas_ocupadas) #coloco la letra en la casilla
                         posAtril = '' #borro la pos guardada para que no se guarde varias veces en el tablero al clickearlo
                         letra = '' #idem pero con la letra
                         print(orientacion) #
                 elif len(palabra) > 1: #si es la letra 3 o mayor (ya está definida la orientacion)
-                    if orientada(event, orientacion): #si la casilla es consecutiva según la orientación definida
-                        colocar_letra(event, posAtril, letra, palabra, fichas_desocupadas, casillas_ocupadas) #coloco la letra en la casilla
+                    if orientada(event, orientacion,anterior): #si la casilla es consecutiva según la orientación definida
+                        anterior = colocar_letra(event, posAtril, letra, palabra, fichas_desocupadas, casillas_ocupadas) #coloco la letra en la casilla
                         posAtril = '' #borro la pos guardada para que no se guarde varias veces en el tablero al clickearlo
                         letra = '' #idem pero con la letra
-
         elif event == 'Confirmar Palabra':
             orientacion = ''
             word = ''.join(letra for letra in palabra) #junto las letras colocadas
