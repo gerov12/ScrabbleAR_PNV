@@ -4,6 +4,7 @@ import random
 import pattern.es
 import Menú
 import time
+from pattern.es import tag
 
 def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
     def cargar_diccionarios(dic_verbs, dic_lexicon, dic_spelling):
@@ -194,34 +195,43 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
     #                 letra = '' #idem pero con la letra
     #             else:
     #                 print('a')
+    def elegir_clasificacion (): #hace random para elegir con que clasificacion de palabras se va a jugar en el nivel 3
+        if random.randint(0, 1) == 1:
+            return 'VB'
+        else:
+            return 'JJ'
 
-
-    def es_palabra(pal, nivel): #determina si el conjunto de letras ingresado es una palabra
+    def es_palabra(pal, nivel,clasificacion=999): #determina si el conjunto de letras ingresado es una palabra
         aux = False
-        donde = [] #guarda en dónde se encontró la palabra
         if not pal.lower() in dic_verbs:
             if pal.lower() in dic_lexicon:
                 print(pal + " en lexicon")
                 aux = True
-                donde.append('lexicon') #la encontré en lexicon
                 if pal.lower() in dic_spelling:
                     print(pal + " en spelling")
                     aux = True
-                    donde.append('spelling') #la encontré en spelling
         else:
             print(pal + " en verbs")
             aux = True
-            donde.append('verbs') #la encontré en verbos
         if aux:
+            print(tag)
+            p,tipo=tag(pal)[0] #guardo el tipo de palabra
+            print(tipo)
+            print(p)
             if nivel == 'nivel1':
                 return True
             elif nivel == 'nivel2':
-                if 'verbs' in donde:
+                if tipo == 'VB' or tipo == 'JJ':
                     return True
                 else:
+                    sg.PopupNoButtons('Tipo de palabra no valido para este nivel',auto_close=True,auto_close_duration=4,no_titlebar=True)
                     return False
-            # elif nivel =='nivel3':
-            #     ...
+            elif nivel =='nivel3':
+                if tipo == clasificacion:
+                    return True
+                else:
+                    sg.PopupNoButtons('Tipo de palabra no valido para este nivel',auto_close=True,auto_close_duration=4,no_titlebar=True)
+                    return False
 
     def devolver(fichas_desocupadas, casillas_ocupadas): #devuelve las letras al atril en caso de que una palabra sea incorrecta
         for i in range(len(fichas_desocupadas)):
@@ -290,7 +300,6 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
 
 
     sg.ChangeLookAndFeel('DarkAmber')
-
     dic_verbs = [] #lista con todos los verbos (infinitivos + conjugaciones) modificados (sin tildes)
     dic_lexicon = {}  #diccionario de pattern modificado (sin tildes)
     dic_spelling = {} #diccionario de pattern modificado (sin tildes)
@@ -298,7 +307,12 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
     bolsa = llenar_bolsa(nivel) #el argumento 3 del programa tiene el nivel elegido
     puntajes = cargar_puntajes()
     casillasESP = cargar_casillas_especiales(nivel) #se le enviaria el nivel por parametro pero falta terminar el json
-
+    if (nivel == 'nivel3'):
+        clasificacion= elegir_clasificacion()
+        if clasificacion == 'VB': #mensaje para el usuario
+            sg.PopupNoButtons('En esta partida solo se usaran verbos',auto_close=True,auto_close_duration=4,no_titlebar=True)
+        else:
+            sg.PopupNoButtons('En esta partida solo se usaran adjetivos',auto_close=True,auto_close_duration=4,no_titlebar=True)
     #keys de las casillas y las posiciones del atril (se usa para saber dónde clickea el jugador)
     casillas = cargar_casillas()
     atril = ['J1','J2','J3','J4','J5','J6','J7']
@@ -526,7 +540,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
             orientacion = ''
             word = ''.join(letra for letra in palabra) #junto las letras colocadas
             print(word)
-            if es_palabra(word, nivel) and len(word)>=2: #ya que lexicon y spelling toman como palabras a las letras individuales
+            if es_palabra(word, nivel,clasificacion=999) and len(word)>=2: #ya que lexicon y spelling toman como palabras a las letras individuales
                 if inicial: #si la palabra que coloqué es la primera del juego
                     if '0707' in casillas_ocupadas: #si la casilla inicial está ocupada
                         print('entra con puntos : ' + str(totalJUG)) #
