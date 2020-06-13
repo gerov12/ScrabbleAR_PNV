@@ -197,9 +197,9 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
     #                 print('a')
     def elegir_clasificacion (): #hace random para elegir con que clasificacion de palabras se va a jugar en el nivel 3
         if random.randint(0, 1) == 1:
-            return 'VB'
+            return 'VB' #verbos
         else:
-            return 'JJ'
+            return 'JJ' #adjetivos
 
     def es_palabra(pal, nivel,clasificacion=999): #determina si el conjunto de letras ingresado es una palabra
         aux = False
