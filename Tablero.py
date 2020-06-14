@@ -361,7 +361,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
             [sg.Text('')],
             [sg.Frame('Tiempo',frameTiempo, title_color='white',background_color='black')],
             [sg.Text('')],
-            [sg.Button('Pausa', size=(23,1), key='pausa', button_color = ('black','white')),sg.Button('Reglas', size=(23,1), pad=(8,0), button_color = ('black','white'))],
+            [sg.Button('Pausa', size=(23,1), key='pausa', button_color = ('black','white')),sg.Button('Reglas', size=(23,1), pad=(8,0), button_color = ('black','white'), key = 'reglas')],
             [sg.Button('Confirmar Palabra', size=(52,1), button_color = ('black','white'))],
             [sg.Text('')],
             [sg.Text('')],
@@ -427,19 +427,22 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
     while True:
         event, values = window.Read(timeout=10)  #Ni idea que hace el timeout
         if actual_time == (int(tiempo)*60)*100:       #CENTESIMAS
-            print('Terminó del Tiempo') #
+            print('Terminó el Tiempo') #
             paused = True
         if not paused:
             actual_time = int(round(time.time() * 100)) - start_time
         else:
             event,values = window.Read()
-        if event == 'Reglas':
-            if (nivel == 'nivel1'):
-                Reglas.main()
-            elif (nivel == 'nivel2'):
-                Reglas.main('nivel2')
+        if event == 'reglas':
+            paused = True #Pongo en pausa el tiempo
+            paused_time = int(round(time.time() * 100)) #Guardo donde quedo el tiempo
+            if nivel == 'nivel1' or nivel == 'nivel2':
+                Reglas.main(nivel)
             else:
-                Reglas.main('nivel3',clasificacion)
+                Reglas.main(nivel,clasificacion)
+            if Reglas.reanudar_reloj():
+                paused = False #Pongo play
+                start_time = start_time + int(round(time.time() * 100)) - paused_time #Retomo desde donde quedé
         if event == 'pausa':
             if window.Element('pausa').GetText() == 'Pausa':
                 paused = True
@@ -473,6 +476,8 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
             if len(a_cambiar)>0: #si seleccioné letras
                 if mezclar(a_cambiar, bolsa):
                     cant += 1 #incremento la variable que cuenta las veces que se apretó "Cambiar letras"
+                    for i in a_cambiar:
+                        window.Element(i).Update(button_color = ('black','white')) #vuelve a poner en blanco a todas las letras del atril
                 else:
                     for i in a_cambiar:
                         window.Element(i).Update(button_color = ('black','white')) #vuelve a poner en blanco a todas las letras del atril
@@ -540,7 +545,11 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
             orientacion = ''
             word = ''.join(letra for letra in palabra) #junto las letras colocadas
             print(word)
-            if es_palabra(word, nivel,clasificacion=999) and len(word)>=2: #ya que lexicon y spelling toman como palabras a las letras individuales
+            if nivel == 'nivel1' or nivel == 'nivel2':
+                v_palabra = es_palabra(word, nivel) #booleano para entrar al if de mas abajo
+            else:
+                v_palabra = es_palabra(word, nivel,clasificacion)
+            if v_palabra and len(word)>=2: #ya que lexicon y spelling toman como palabras a las letras individuales
                 if inicial: #si la palabra que coloqué es la primera del juego
                     if '0707' in casillas_ocupadas: #si la casilla inicial está ocupada
                         print('entra con puntos : ' + str(totalJUG)) #
