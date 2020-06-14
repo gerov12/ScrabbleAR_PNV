@@ -3,6 +3,7 @@ import json
 import random
 import pattern.es
 import Menú
+import Reglas
 import time
 from pattern.es import tag
 
@@ -214,10 +215,9 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
             print(pal + " en verbs")
             aux = True
         if aux:
-            print(tag)
             p,tipo=tag(pal)[0] #guardo el tipo de palabra
-            print(tipo)
-            print(p)
+            print(tag(pal)[0])
+            print('tipo'+tipo)
             if nivel == 'nivel1':
                 return True
             elif nivel == 'nivel2':
@@ -435,11 +435,11 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
             event,values = window.Read()
         if event == 'Reglas':
             if (nivel == 'nivel1'):
-                sg.Popup("Reglas nivel 1:                                        *Verde -> duplica el valor de la letra                  *Azúl -> triplica el valor de la letra                     *Naranja -> duplica el valor de la palabra                          *Rosa -> triplica el valor de la palabra",no_titlebar=True)
+                Reglas.main()
             elif (nivel == 'nivel2'):
-                sg.Popup("Reglas nivel 2:                                        *Verde -> duplica el valor de la letra                  *Azúl -> triplica el valor de la letra                     *Naranja -> duplica el valor de la palabra                          *Rosa -> triplica el valor de la palabra                              *Amarillo -> resta 2 puntos",no_titlebar=True)
+                Reglas.main('nivel2')
             else:
-                sg.Popup("Reglas nivel 3:                                        *Verde -> duplica el valor de la letra                  *Azúl -> triplica el valor de la latra                     *Naranja -> duplica el valor de la palabra                          *Rosa -> triplica el valor de la palabra                              *Amarillo -> resta 2 puntos",no_titlebar=True)
+                Reglas.main('nivel3',clasificacion)
         if event == 'pausa':
             if window.Element('pausa').GetText() == 'Pausa':
                 paused = True
