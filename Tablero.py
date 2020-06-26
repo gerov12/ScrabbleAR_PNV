@@ -2,12 +2,12 @@ import PySimpleGUI as sg
 import json
 import random
 import pattern.es
-import Menú
+import ScrabbleAR
 import Reglas
 import time
 from pattern.es import tag
 
-def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
+def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modificado = False):
     def cargar_diccionarios(dic_verbs, dic_lexicon, dic_spelling):
         for pal in pattern.es.verbs.keys():
             aux = []
@@ -44,13 +44,22 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
 
     def llenar_bolsa(nivel): #carga las cantides para c/ letra segun el nivel ingresado por parametro
         #nivel por defecto es el 1
-        with open('Archivos/Letras.json','r') as archivo_letras:
-            letras = json.load(archivo_letras)
-            letrasN = letras[nivel] #toma el diccionario de letras:cantidades del nivel correspondiente
-            bolsa = [] #bolsa de letras para repartir a los jugadores
-            for letra, cantidad in letrasN.items():
-                for i in range(1,cantidad+1): #guarda "cantidad" veces la letra correspondiente
-                    bolsa.append(letra)
+        if not modificado:
+            with open('Archivos/Letras.json','r') as archivo_letras:
+                letras = json.load(archivo_letras)
+                letrasN = letras[nivel] #toma el diccionario de letras:cantidades del nivel correspondiente
+                bolsa = [] #bolsa de letras para repartir a los jugadores
+                for letra, cantidad in letrasN.items():
+                    for i in range(1,cantidad+1): #guarda "cantidad" veces la letra correspondiente
+                        bolsa.append(letra)
+        else:
+            with open('Archivos/Letras_modificado.json','r') as archivo_letras:
+                letras = json.load(archivo_letras)
+                letrasN = letras #toma el diccionario de letras modificado
+                bolsa = [] #bolsa de letras para repartir a los jugadores
+                for letra, cantidad in letrasN.items():
+                    for i in range(1,cantidad+1): #guarda "cantidad" veces la letra correspondiente
+                        bolsa.append(letra)
         return bolsa
 
     def cargar_puntajes(): #carga los puntajes para c/ letra
@@ -310,9 +319,9 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
     if (nivel == 'nivel3'):
         clasificacion= elegir_clasificacion()
         if clasificacion == 'VB': #mensaje para el usuario
-            sg.PopupNoButtons('En esta partida solo se usaran verbos',auto_close=True,auto_close_duration=4,no_titlebar=True)
+            sg.PopupNoButtons('En esta partida solo se usaran verbos',auto_close=True,auto_close_duration=3,no_titlebar=True)
         else:
-            sg.PopupNoButtons('En esta partida solo se usaran adjetivos',auto_close=True,auto_close_duration=4,no_titlebar=True)
+            sg.PopupNoButtons('En esta partida solo se usaran adjetivos',auto_close=True,auto_close_duration=3,no_titlebar=True)
     #keys de las casillas y las posiciones del atril (se usa para saber dónde clickea el jugador)
     casillas = cargar_casillas()
     atril = ['J1','J2','J3','J4','J5','J6','J7']
@@ -322,12 +331,12 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
 
     #texto con el puntaje de la PC (layout para el frame)
     puntCOM = [
-        [sg.Text(0, size=(45,1), text_color= 'white', background_color= 'grey',key='PC')]
+        [sg.Text(0, size=(52,1), text_color= 'white', background_color= 'grey',key='PC')]
     ]
 
     #texto con el puntaje del jugador (layout para el frame)
     puntJUG = [
-        [sg.Text(0, size=(45,1), text_color= 'white', background_color= 'grey', key='PJ')]
+        [sg.Text(0, size=(52,1), text_color= 'white', background_color= 'grey', key='PJ')]
     ]
 
     #marco con el atril de la PC
@@ -362,16 +371,17 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
             [sg.Frame('Tiempo',frameTiempo, title_color='white',background_color='black')],
             [sg.Text('')],
             [sg.Button('Pausa', size=(23,1), key='pausa', button_color = ('black','white')),sg.Button('Reglas', size=(23,1), pad=(8,0), button_color = ('black','white'), key = 'reglas')],
+            [sg.Button('Terminar', size=(23,1), key='terminar', button_color=('black','white')), sg.Button('Guardar Partida', size=(23,1),pad=(8,0), key='guardar', button_color=('black', 'white'))], #Falta implementacion
+            [sg.Text('')],
+            [sg.Text('')],
+            [sg.Text('')],
+            [sg.Text('')],
+            [sg.Text('')],
             [sg.Button('Confirmar Palabra', size=(52,1), button_color = ('black','white'))],
-            [sg.Text('')],
-            [sg.Text('')],
-            [sg.Text('')],
-            [sg.Text('')],
-            [sg.Text('')],
-            [sg.Button('Cambiar Letras', disabled = False, button_color = ('black','white'), key = 'CAMBIO'),
-            sg.Button('Todas', disabled = True, button_color = ('black','white'), key = 'TODAS'),
-            sg.Button('Algunas', disabled = True, button_color = ('black','white'), key = 'ALGUNAS'),
-            sg.Button('Cancelar', disabled = True, button_color = ('black','white'), key = 'CANCEL')],
+            [sg.Button('Cambiar Letras', disabled = False, button_color = ('black','white'), key = 'CAMBIO',size=(9,1)),
+            sg.Button('Todas', disabled = True, button_color = ('black','white'), key = 'TODAS', size=(9,1)),
+            sg.Button('Algunas', disabled = True, button_color = ('black','white'), key = 'ALGUNAS', size=(9,1)),
+            sg.Button('Cancelar', disabled = True, button_color = ('black','white'), key = 'CANCEL', size=(9,1))],
             [sg.Frame('PUNTAJE '+nombre.upper(), puntJUG, title_color='white',background_color='black', key= 'LJ')], #puntaje del jugador
             [sg.Frame('',frameAtrilJUG,border_width=8)], #atril del jugador
             [sg.Button('Cambiar', button_color = ('black','white'), visible = False, key = 'OK'), sg.Button('Cancelar', button_color = ('black','white'), visible = False, key = 'CancelAlgunas')]
@@ -458,7 +468,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
             if cant <=3:
                 activar() #hago utilizables los botones de cambio
             else:
-                sg.PopupNoButtons('Esta función ya no esta disponible',auto_close=True,auto_close_duration=4,no_titlebar=True)
+                sg.PopupNoButtons('Esta función ya no esta disponible',auto_close=True,auto_close_duration=3,no_titlebar=True)
         elif event == 'TODAS': #cambia todas las letras del atril
             if mezclar(atril, bolsa):
                 cant += 1 #incremento la variable que cuenta las veces que se apretó "Cambiar letras"
@@ -561,7 +571,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
                         fichas_desocupadas = [] #reinicio la lista de fichas desocupadas
                         inicial = False #desactivo la variable que indica que la palabra inicial aún no se colocó
                     else: #si está desocupada
-                        sg.PopupNoButtons("Una letra debe ocupar la casilla inicial", auto_close=True,auto_close_duration=4,no_titlebar=True) #informo el error
+                        sg.PopupNoButtons("Una letra debe ocupar la casilla inicial", auto_close=True,auto_close_duration=3,no_titlebar=True) #informo el error
                         devolver(fichas_desocupadas, casillas_ocupadas) #devuelve las letras al atril
                         fichas_desocupadas = [] #reinicio la lista de fichas desocupadas
                 else: #si no es la palabra incial prosigo normalmente
@@ -575,6 +585,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0):
 
             else:
                 print(word+' no es palabra') #
+                sg.PopupNoButtons(word + ' no es palabra', auto_close=True, auto_close_duration=3, no_titlebar=True)
                 if '0707' in casillas_ocupadas: #si era la palabra inicial vuelvo a activar la variable que indica que se colocará la primer palabra del juego
                     inicial = True
                 devolver(fichas_desocupadas, casillas_ocupadas) #devuelve las letras al atril

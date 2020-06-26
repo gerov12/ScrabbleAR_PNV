@@ -10,10 +10,11 @@ def main():
         [sg.Button('Partida Rápida', size = (30, 2), pad=(90,4))],
         [sg.Button('Cargar Partida', size = (30, 2), pad=(90,4))],
         [sg.Button('Partida Personalizada', size = (30, 2), pad=(90,4))],
+        [sg.Button('Top 10 Puntajes', size = (30, 2), pad=(90,4))],
         [sg.Button('Salir', size = (20, 2), pad=(125,4))]
     ]
 
-    window = sg.Window('ScrabbleAR', size =(450, 500)).Layout(layout).Finalize()
+    window = sg.Window('ScrabbleAR', size =(450, 540)).Layout(layout).Finalize()
 
     while True:
         event, values = window.Read()
