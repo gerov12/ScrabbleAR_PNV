@@ -213,34 +213,38 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
 
     def es_palabra(pal, nivel,clasificacion=999): #determina si el conjunto de letras ingresado es una palabra
         aux = False
-        if not pal.lower() in dic_verbs:
-            if pal.lower() in dic_lexicon:
-                print(pal + " en lexicon")
-                aux = True
-                if pal.lower() in dic_spelling:
-                    print(pal + " en spelling")
+        if len(pal) != 0:
+            if not pal.lower() in dic_verbs:
+                if pal.lower() in dic_lexicon:
+                    print(pal + " en lexicon")
                     aux = True
+                    if pal.lower() in dic_spelling:
+                        print(pal + " en spelling")
+                        aux = True
+            else:
+                print(pal + " en verbs")
+                aux = True
+
+            if aux:
+                p,tipo=tag(pal)[0] #guardo el tipo de palabra
+                print(tag(pal)[0])
+                print('tipo'+tipo)
+                if nivel == 'nivel1':
+                    return True
+                elif nivel == 'nivel2':
+                    if tipo == 'VB' or tipo == 'JJ':
+                        return True
+                    else:
+                        sg.PopupNoButtons('Tipo de palabra no valido para este nivel',auto_close=True,auto_close_duration=4,no_titlebar=True)
+                        return False
+                elif nivel =='nivel3':
+                    if tipo == clasificacion:
+                        return True
+                    else:
+                        sg.PopupNoButtons('Tipo de palabra no valido para este nivel',auto_close=True,auto_close_duration=4,no_titlebar=True)
+                        return False
         else:
-            print(pal + " en verbs")
-            aux = True
-        if aux:
-            p,tipo=tag(pal)[0] #guardo el tipo de palabra
-            print(tag(pal)[0])
-            print('tipo'+tipo)
-            if nivel == 'nivel1':
-                return True
-            elif nivel == 'nivel2':
-                if tipo == 'VB' or tipo == 'JJ':
-                    return True
-                else:
-                    sg.PopupNoButtons('Tipo de palabra no valido para este nivel',auto_close=True,auto_close_duration=4,no_titlebar=True)
-                    return False
-            elif nivel =='nivel3':
-                if tipo == clasificacion:
-                    return True
-                else:
-                    sg.PopupNoButtons('Tipo de palabra no valido para este nivel',auto_close=True,auto_close_duration=4,no_titlebar=True)
-                    return False
+            return False
 
     def devolver(fichas_desocupadas, casillas_ocupadas): #devuelve las letras al atril en caso de que una palabra sea incorrecta
         for i in range(len(fichas_desocupadas)):
@@ -433,7 +437,6 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
     actual_time = 0
     paused = False
     start_time = int(round(time.time() * 100))
-
     while True:
         event, values = window.Read(timeout=10)  #Ni idea que hace el timeout
         if actual_time == (int(tiempo)*60)*100:       #CENTESIMAS
