@@ -6,6 +6,8 @@ import ScrabbleAR
 import Reglas
 import time
 from pattern.es import tag
+from os.path import isfile
+
 
 def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modificado = False):
     def cargar_diccionarios(dic_verbs, dic_lexicon, dic_spelling):
@@ -311,6 +313,29 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
         actual += total #al puntaje actual le agrego el obtenido con la nueva palabra
         return actual
 
+    def extraer_datos_top10(nivel):
+	       with open('top10_'+nivel+'.json', 'r') as archivo: #abro el archivo del top 10 en modo lectura
+		         info = json.load(archivo) #deserializo la info que tiene el archivo
+	       return info #en info esta el contenido del archivo
+
+    def guardar_datos (nivel,datos):
+	       with open('top10_'+nivel+'.json','w') as archivo: #(si no existe lo creo al archivo) lo abro en modo escritura
+		         json.dump(datos,archivo) #serializo la info
+
+    def calcular_top10(nivel,puntaje): #recibo el puntaje del jugador
+        nuevo={"puntaje":puntaje,"fecha":time.strftime("%a, %d %b %Y %H:%M:%S"),"nivel":nivel} #creo un dic para cargar la info nueva
+        if isfile('top10_'+nivel+'.json'): #pregunto si el archivo existe
+                datos = extraer_datos_top10(nivel) #si existe, voy a asignarle su contenido a la variable datos
+                print(datos[1]["puntaje"])
+                if not puntaje in datos["puntaje"]:
+                            datos.append(nuevo) #cargo el nuevo puntaje
+                            datos=sorted(datos,key=lambda jugador: jugador['puntaje'],reverse=True) #lo ordeno, para ver si el nuevo puntaje supera a algunos de los puntajes del archivo
+                            if len(datos) > 10: #si tengo 11 elementos entro
+                                del datos[10] #elimino el dato que no me sirve (elemento n 11 de la lista)
+        else: #aca solo va a entrar una sola vez, (el primer dato de la lista)
+            datos=[]#creo una lista de diccionario para guardar mis datos
+            datos.append(nuevo)#agrego el primer puntaje
+        guardar_datos(nivel,datos) #llamo a la funcion que serializa la info para subir la info al archivo
 
     sg.ChangeLookAndFeel('DarkAmber')
     dic_verbs = [] #lista con todos los verbos (infinitivos + conjugaciones) modificados (sin tildes)
@@ -439,9 +464,13 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
     start_time = int(round(time.time() * 100))
     while True:
         event, values = window.Read(timeout=10)  #Ni idea que hace el timeout
+        if event is None:
+            break
         if actual_time == (int(tiempo)*60)*100:       #CENTESIMAS
-            print('Terminó el Tiempo') #
+            sg.Popup('Terminó el Tiempo')
+            calcular_top10(nivel,totalJUG)
             paused = True
+            break
         if not paused:
             actual_time = int(round(time.time() * 100)) - start_time
         else:
@@ -465,8 +494,6 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
                 paused = False
                 start_time = start_time + int(round(time.time() * 100)) - paused_time
                 window.Element('pausa').Update(text='Pausa')
-        if event is None:
-            break
         elif event == 'CAMBIO' and len(palabra) == 0: #solo puedo cambiar letras si no coloqué ninguna en el tablero
             if cant <=3:
                 activar() #hago utilizables los botones de cambio
@@ -595,6 +622,9 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
                 fichas_desocupadas = [] #reinicio la lista de fichas desocupadas
             palabra = [] #reinicio la lista
             casillas_ocupadas = [] #idem
+        elif event == 'terminar':
+            calcular_top10(nivel,totalJUG)
+            break
         window.FindElement('time').Update('{:02d}:{:02d}'.format((actual_time // 100) // 60,(actual_time // 100) % 60))
 
     window.Close()
