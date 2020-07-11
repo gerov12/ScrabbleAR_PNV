@@ -104,10 +104,14 @@ def main():
                     dic = {}
                     for key,valor in valores.items():  #Transformo los valores en integer
                         dic[key] = int(valor)
-                    with open('Archivos/Letras_modificado.json','w') as file: #Guardo el diccionario en un JSON
-                        json.dump(dic,file)
-                    ok = True
-                    break
+                    try:
+                        with open('Archivos/Letras_modificado.json','w') as file: #Guardo el diccionario en un JSON
+                            json.dump(dic,file)
+                            ok = True
+                    except(FileNotFoundError):
+                        sg.Popup('Error. No existe la carpeta "Archivos"')
+                    finally:
+                        break
             window2.Close()
 
 

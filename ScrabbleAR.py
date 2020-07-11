@@ -1,7 +1,6 @@
 import PySimpleGUI as sg
 import Tablero
 import Configuracion
-from os.path import isfile
 import json
 
 def main():
@@ -12,12 +11,12 @@ def main():
 
     def retornar_datos (nom_archivo):
         lis=[]
-        if isfile(nom_archivo):
+        try:
             archivo=open(nom_archivo)
             lis=json.load(archivo)
             archivo.close()
-        else:
-            lis=['No hay datos']
+        except (FileNotFoundError):
+            sg.Popup('No hay datos')
         return lis
 
     layout = [
