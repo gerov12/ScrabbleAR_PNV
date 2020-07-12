@@ -43,8 +43,12 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
             aux_key = aux_key.replace('ú','u')
             dic_spelling[aux_key] = aux_item #guardo en el nuevo diccionario pero sin tilde
 
-    def llenar_bolsa(nivel): #carga las cantides para c/ letra segun el nivel ingresado por parametro
-        #nivel por defecto es el 1
+    def llenar_bolsa(nivel):
+        '''Carga las cantidades para cada letra segun el nivel ingresado por parametro. Por defecto nivel 1.
+        Si el usuario decide cambiar la cantidad de letras, se abre otro archivo que se llama letras_modificado.
+        Si por alguna razon estos archivos no existen se levanta la excepcion y se le avisa al usuario
+        mediante un Popup'''
+
         bolsa = []
         if not modificado:
             try:
@@ -68,17 +72,29 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
                 sg.Popup('ERROR. Los archivos JSON que contienen las letras no existen')
         return bolsa
 
-    def cargar_puntajes(): #carga los puntajes para c/ letra
+    def cargar_puntajes():
+        '''Carga los puntajes para cada letra'''
+
         with open('Archivos/Puntajes.json','r') as archivo_puntajes:
             puntajes = json.load(archivo_puntajes)
         return puntajes
 
-    def cargar_casillas(): #carga las keys de las casillas del tablero
+    def cargar_casillas():
+        '''Carga las keys de las casillas del tablero'''
+
         with open('Archivos/Casillas.json','r') as archivo_casillas:
             cas = json.load(archivo_casillas)
         return cas
 
     def cargar_casillas_especiales(nivel):
+        '''Carga las keys de las casillas especiales del tablero.
+          Casillas especiales:
+        ->Duplica el valor de la letra
+        ->Triplica el valor de la letra
+        ->Duplica el valor de la palabra
+        ->Triplica el valor de la palabra
+        ->Resta dos puntos al valor total de la palabra'''
+
         with open ('Archivos/Especiales.json','r') as archivo_casillas: #falta escribir el archivo Especiales.json
             casillas_esp=json.load(archivo_casillas)
         return casillas_esp[nivel] #devuelve el dic del nivel correspondiente
@@ -211,13 +227,22 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
     #                 letra = '' #idem pero con la letra
     #             else:
     #                 print('a')
-    def elegir_clasificacion (): #hace random para elegir con que clasificacion de palabras se va a jugar en el nivel 3
+    def elegir_clasificacion ():
+        '''Hace un random para elegir con que clasificacion de palabras se va a jugar en el nivel 3
+        0 -> Adjetivos
+        1 -> Verbos'''
+
         if random.randint(0, 1) == 1:
             return 'VB' #verbos
         else:
             return 'JJ' #adjetivos
 
-    def es_palabra(pal, nivel,clasificacion=999): #determina si el conjunto de letras ingresado es una palabra
+    def es_palabra(pal, nivel,clasificacion=999):
+        '''Determina si el conjunto de letras ingresado es una palabra.
+        En el caso del nivel 2 y 3 ademas de determinar si es una palabra tambien esta funcion
+        se fija si corresponde a la clasificacion de palabras para el nivel en que se esta jugando.
+        Si ingresa una palabra con longitud 0, se levanta una excepcion y retorna falso.'''
+
         aux = False
         try:
             if not pal.lower() in dic_verbs:
@@ -262,7 +287,9 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
             window.FindElement(fichas_desocupadas[i]).Update(image_filename='Imagenes/Temas/'+tema.lower()+'/'+letter+'_'+tema.lower()+'.png')  #coloco la letra en la casilla
             del casillas_ocupadas[pos] #quito la casilla que acabo de "limpiar" de la lista de casillas ocupadas
 
-    def sumar_puntos (puntajes,casillas_esp,palabra,casilla,actual): #suma al total los puntos de la palabra ingresada
+    def sumar_puntos (puntajes,casillas_esp,palabra,casilla,actual):
+        '''Calcula el puntaje de la palabra y suma al total los puntos'''
+
         print('entra a la funcion') #
         total=0
         valor=0 #valor por el que hay que multiplicar la palabra
@@ -318,15 +345,28 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
         return actual
 
     def extraer_datos_top10(nivel):
-	       with open('top10_'+nivel+'.json', 'r') as archivo: #abro el archivo del top 10 en modo lectura
+        '''Abre el archivo JSON que tiene la informacion del top 10 del correspondiente nivel
+        que entra como parametro, deserializa la informacion y la retorna '''
+
+           with open('top10_'+nivel+'.json', 'r') as archivo: #abro el archivo del top 10 en modo lectura
 		         info = json.load(archivo) #deserializo la info que tiene el archivo
 	       return info #en info esta el contenido del archivo
 
     def guardar_datos (nivel,datos):
-	       with open('top10_'+nivel+'.json','w') as archivo: #(si no existe lo creo al archivo) lo abro en modo escritura
+        '''Si el archivo NO existe lo crea, serializa la informacion y lo carga en el archivo JSON.
+        Si el archivo existe, lo abre, serializa la informacion de antes mas la nueva y lo carga en el archivo JSON ''''
+
+           with open('top10_'+nivel+'.json','w') as archivo: #(si no existe lo creo al archivo) lo abro en modo escritura
 		         json.dump(datos,archivo) #serializo la info
 
     def calcular_top10(nivel,puntaje): #recibo el puntaje del jugador
+        '''Una vez terminado el juego, esta funcion se fija en el puntaje del jugador:
+        ->Si el archivo top 10 del nivel correspondiente no existe, se levanta una excepcion,
+        esta es manejada por el bloque try-except y se carga la informacion del primer jugador al archivo JSON.
+        ->Si el archivo top 10 del nivel correspondiente existe, carga el nuevo puntaje a la estructura de datos
+        la ordena y determina si tiene longitud mayor a 10. Si esta estructura de datos tiene longitud mayor a 10
+        se elimina el ultimo puntaje'''
+
         nuevo={"puntaje":puntaje,"fecha":time.strftime("%a, %d %b %Y %H:%M:%S"),"nivel":nivel} #creo un dic para cargar la info nueva
         try:
             datos = extraer_datos_top10(nivel) #si existe, voy a asignarle su contenido a la variable datos
@@ -462,7 +502,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
         inicial = True #indica si se tiene que colocar la primer ficha de la partida
         totalJUG = 0 #puntos del jugador
         totalCOM = 0 #puntos de la PC
-        cambioActivado = False #si se están cambiando letras
+        cambioActivado = False #si se están cambiando l etras
         a_cambiar = [] #lista de pos de atril a cambiar con mezclar()
         cant=1 #cantidad de veces que apreta "Cambiar letras"
 

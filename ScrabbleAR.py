@@ -7,9 +7,15 @@ def main():
     sg.ChangeLookAndFeel('DarkAmber')
 
     def actualizar(listbox,lis):
+        '''Actualiza el contenido de la listbox con lo que contenga la variable "lis" '''
+
         listbox.Update(map(lambda x: "{}".format(x),lis))
 
     def retornar_datos (nom_archivo):
+        '''Abre el archivo del top 10 del nivel correspondiente, si existe carga los datos del archivo a la
+        variable "lis". Caso contrario si el archivo no existe se levanta una excepcion y se le informa al
+        usuario que no hay datos mediante un Popup '''
+        
         lis=[]
         try:
             archivo=open(nom_archivo)
