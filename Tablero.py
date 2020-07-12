@@ -8,7 +8,7 @@ import time
 from pattern.es import tag
 
 
-def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modificado = False):
+def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modificado = False, modificado2 = False):
     def cargar_diccionarios(dic_verbs, dic_lexicon, dic_spelling):
         for pal in pattern.es.verbs.keys():
             aux = []
@@ -73,10 +73,15 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
         return bolsa
 
     def cargar_puntajes():
-        '''Carga los puntajes para cada letra'''
+        '''Carga los puntajes para cada letra.
+        Si el usuario decide cambiar el puntaje de las letras, se abre otro archivo que se llama Puntajes_modificado'''
 
-        with open('Archivos/Puntajes.json','r') as archivo_puntajes:
-            puntajes = json.load(archivo_puntajes)
+        if not modificado2:
+            with open('Archivos/Puntajes.json','r') as archivo_puntajes:
+                puntajes = json.load(archivo_puntajes)
+        else:
+            with open ('Archivos/Puntajes_modificado.json', 'r') as archivo_puntajes:
+                puntajes = json.load(archivo_puntajes)
         return puntajes
 
     def cargar_casillas():
@@ -348,16 +353,15 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
         '''Abre el archivo JSON que tiene la informacion del top 10 del correspondiente nivel
         que entra como parametro, deserializa la informacion y la retorna '''
 
-           with open('top10_'+nivel+'.json', 'r') as archivo: #abro el archivo del top 10 en modo lectura
-		         info = json.load(archivo) #deserializo la info que tiene el archivo
-	       return info #en info esta el contenido del archivo
+        with open('top10_'+nivel+'.json', 'r') as archivo: #abro el archivo del top 10 en modo lectura
+            info = json.load(archivo) #deserializo la info que tiene el archivo
+        return info #en info esta el contenido del archivo
 
     def guardar_datos (nivel,datos):
         '''Si el archivo NO existe lo crea, serializa la informacion y lo carga en el archivo JSON.
-        Si el archivo existe, lo abre, serializa la informacion de antes mas la nueva y lo carga en el archivo JSON ''''
-
-           with open('top10_'+nivel+'.json','w') as archivo: #(si no existe lo creo al archivo) lo abro en modo escritura
-		         json.dump(datos,archivo) #serializo la info
+        Si el archivo existe, lo abre, serializa la informacion de antes mas la nueva y lo carga en el archivo JSON '''
+        with open('top10_'+nivel+'.json','w') as archivo: #(si no existe lo creo al archivo) lo abro en modo escritura
+            json.dump(datos,archivo) #serializo la info
 
     def calcular_top10(nivel,puntaje): #recibo el puntaje del jugador
         '''Una vez terminado el juego, esta funcion se fija en el puntaje del jugador:

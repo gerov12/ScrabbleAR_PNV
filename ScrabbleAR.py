@@ -15,7 +15,7 @@ def main():
         '''Abre el archivo del top 10 del nivel correspondiente, si existe carga los datos del archivo a la
         variable "lis". Caso contrario si el archivo no existe se levanta una excepcion y se le informa al
         usuario que no hay datos mediante un Popup '''
-        
+
         lis=[]
         try:
             archivo=open(nom_archivo)
@@ -61,7 +61,7 @@ def main():
 
             while True:
                 event2, values2 = window2.Read()
-                if event2 == 'Cerrar':
+                if event2 == 'Cerrar' or event2 == None:
                     window2.Close()
                     break
                 elif event2 == 'Atras':
