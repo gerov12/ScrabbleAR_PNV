@@ -5,6 +5,7 @@ import json
 
 def main():
     def definir_parametros(values):
+        '''Asigna los valores que el jugador selecciono a los parametros que se enviaran al tablero'''
         if values['nom'] != '':
             jug = values['nom']
         else:
@@ -130,7 +131,7 @@ def main():
                                     json.dump(dic,file)
                                     ok = True
                             except(FileNotFoundError):
-                                sg.Popup('Error. No existe la carpeta "Archivos"')
+                                sg.Popup('Error. No existe la carpeta "Archivos" o el archivo solicitado.', no_titlebar=True)
                             finally:
                                 break
                     window3.Close()
@@ -183,7 +184,7 @@ def main():
                                     json.dump(dic,file)
                                     ok2 = True
                             except(FileNotFoundError):
-                                sg.Popup('Error. No existe la carpeta "Archivos"')
+                                sg.Popup('Error. No existe la carpeta "Archivos" o el archivo solicitado.', no_titlebar=True)
                             finally:
                                 break
                     window4.Close()
