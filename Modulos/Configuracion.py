@@ -1,6 +1,6 @@
 import PySimpleGUI as sg
 import ScrabbleAR
-import Tablero
+from Modulos import Tablero
 import json
 
 def main():
@@ -65,15 +65,16 @@ def main():
             break
         elif event == 'Modificar letras': #Guardo las cantidades de las letras en un diccionario nuevo
 
-            modificar =[[sg.Button('Modificar La Cantidad De Letras'),sg.Button('Modificar El Puntaje De Las Letras')],
-                        [sg.Text('')],
-                        [sg.Text('')],
-                        [sg.Text('')],
-                        [sg.Text('')],
-                        [sg.Text('')],
-                        [sg.Button('Confirmar'),sg.Button('Cancelar')]]
+            modificar =[
+                        [sg.Text("")],
+                        [sg.Text("")],
+                        [sg.Button('Modificar La Cantidad De Letras', button_color=("white", "blue"), border_width=0),sg.VerticalSeparator(),
+                        sg.Button('Modificar El Puntaje De Las Letras', button_color=("white", "red"), border_width=0)],
+                        [sg.Text("")],
+                        [sg.Text("")],
+                        [sg.Text("                             "), sg.Button('Confirmar'),sg.Button('Cancelar')]]
 
-            window2 = sg.Window('Modificar letras',size =(560,240)).Layout(modificar).Finalize()
+            window2 = sg.Window('Modificar letras',size =(500,250)).Layout(modificar).Finalize()
 
             while True:
                 event2, values2 = window2.Read()
@@ -113,10 +114,10 @@ def main():
                         sg.Text('W'), sg.Spin([i for i in range(1,12)], initial_value=1, key='W'),
                         sg.Text('X'), sg.Spin([i for i in range(1,12)], initial_value=1, key='X'),
                         sg.Text('Y'), sg.Spin([i for i in range(1,12)], initial_value=1, key='Y')],
-                        [sg.Text('Z'), sg.Spin([i for i in range(1,12)], initial_value=1, key='Z'),
-                        sg.Button('Confirmar', key='confirmar'), sg.Button('Cancelar')]
+                        [sg.Text('Z'), sg.Spin([i for i in range(1,12)], initial_value=1, key='Z')],
+                        [sg.Text("    "),sg.Button('Confirmar', key='confirmar'), sg.Button('Cancelar')]
                         ]
-                    window3 = sg.Window('Modificar La Cantidad De Letras').Layout(letras).Finalize()
+                    window3 = sg.Window('Cantidad De Letras').Layout(letras).Finalize()
 
                     while True:
                         event3, values3 = window3.Read()
@@ -131,7 +132,7 @@ def main():
                                     json.dump(dic,file)
                                     ok = True
                             except(FileNotFoundError):
-                                sg.Popup('Error. No existe la carpeta "Archivos" o el archivo solicitado.', no_titlebar=True)
+                                sg.Popup('Error. No existe la carpeta "Archivos".', no_titlebar=True)
                             finally:
                                 break
                     window3.Close()
@@ -166,10 +167,10 @@ def main():
                         sg.Text('W'), sg.Spin([i for i in range(1,21)], initial_value=1, key='W'),
                         sg.Text('X'), sg.Spin([i for i in range(1,21)], initial_value=1, key='X'),
                         sg.Text('Y'), sg.Spin([i for i in range(1,21)], initial_value=1, key='Y')],
-                        [sg.Text('Z'), sg.Spin([i for i in range(1,21)], initial_value=1, key='Z'),
-                        sg.Button('Confirmar', key='confirmar'), sg.Button('Cancelar')]
+                        [sg.Text('Z'), sg.Spin([i for i in range(1,21)], initial_value=1, key='Z')],
+                        [sg.Text("    "),sg.Button('Confirmar', key='confirmar'), sg.Button('Cancelar')]
                         ]
-                    window4 = sg.Window('Modificar El Puntaje De Las Letras').Layout(letras2).Finalize()
+                    window4 = sg.Window('Puntaje De Letras').Layout(letras2).Finalize()
 
                     while True:
                         event4, values4 = window4.Read()
@@ -184,7 +185,7 @@ def main():
                                     json.dump(dic,file)
                                     ok2 = True
                             except(FileNotFoundError):
-                                sg.Popup('Error. No existe la carpeta "Archivos" o el archivo solicitado.', no_titlebar=True)
+                                sg.Popup('Error. No existe la carpeta "Archivos".', no_titlebar=True)
                             finally:
                                 break
                     window4.Close()

@@ -3,9 +3,10 @@ import json
 import random
 import pattern.es
 import ScrabbleAR
-import Reglas
+from Modulos import Reglas
 import time
 from pattern.es import tag
+import sys
 
 
 def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modificado = False, modificado2 = False):
@@ -61,6 +62,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
                             bolsa.append(letra)
             except (FileNotFoundError):
                 sg.Popup('ERROR. La carpeta "Archivos" o el archivo JSON solicitado no existen.',no_titlebar=True)
+                sys.exit()
         else:
             try:
                 with open('Archivos/Letras_modificado.json','r') as archivo_letras:
@@ -71,6 +73,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
                             bolsa.append(letra)
             except (FileNotFoundError):
                 sg.Popup('ERROR. La carpeta "Archivos" o el archivo JSON solicitado no existen.',no_titlebar=True)
+                sys.exit()
         return bolsa
 
     def cargar_puntajes():
@@ -85,12 +88,14 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
                     puntajes = json.load(archivo_puntajes)
             except (FileNotFoundError):
                 sg.Popup('ERROR. La carpeta "Archivos" o el archivo JSON solicitado no existen.',no_titlebar=True)
+                sys.exit()
         else:
             try:
                 with open ('Archivos/Puntajes_modificado.json', 'r') as archivo_puntajes:
                     puntajes = json.load(archivo_puntajes)
             except (FileNotFoundError):
                 sg.Popup('ERROR. La carpeta "Archivos" o el archivo JSON solicitado no existen.',no_titlebar=True)
+                sys.exit()
         return puntajes
 
     def cargar_casillas():
@@ -102,6 +107,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
             return cas
         except (FileNotFoundError):
             sg.Popup('ERROR. La carpeta "Archivos" o el archivo JSON solicitado no existen.',no_titlebar=True)
+            sys.exit()
 
     def cargar_casillas_especiales(nivel):
         '''Carga las keys de las casillas especiales del tablero.
@@ -112,6 +118,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
             return casillas_esp[nivel] #devuelve el dic del nivel correspondiente
         except (FileNotFoundError):
             sg.Popup('ERROR. La carpeta "Archivos" o el archivo JSON solicitado no existen.',no_titlebar=True)
+            sys.exit()
 
     def cargar_tablero(casillas_esp, nivel):
         '''Crea el layout del tablero, asignandole a cada boton que lo conforma la key
@@ -369,7 +376,12 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
         la ordena y determina si tiene longitud mayor a 10. Si esta estructura de datos tiene longitud mayor a 10
         se elimina el ultimo puntaje'''
 
-        nuevo={"puntaje":puntaje,"fecha":time.strftime("%a, %d %b %Y %H:%M:%S"),"nivel":nivel} #creo un dic para cargar la info nueva
+        if nombre != "Jugador":
+            n = nombre
+        else:
+            n = "Desconocido"
+
+        nuevo={"nombre": n, "puntaje":puntaje, "fecha":time.strftime("%d %b %Y %H:%M"), "nivel":nivel} #creo un dic para cargar la info nueva
         try:
             datos = extraer_datos_top10(nivel) #si existe, voy a asignarle su contenido a la variable datos
             #if not puntaje in datos["puntaje"]:
