@@ -2,12 +2,12 @@ import PySimpleGUI as sg
 import json
 import random
 import pattern.es
-import ScrabbleAR
+#import ScrabbleAR
 from Modulos import Reglas
 import time
 from pattern.es import tag
 import sys
-
+import itertools as it
 
 def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modificado = False, modificado2 = False):
     def cargar_diccionarios(dic_verbs, dic_lexicon, dic_spelling):
@@ -248,6 +248,9 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
         else:
             return 'JJ' #adjetivos
 
+    def seleccion_random ():
+        return(random.randint(0,1))
+
     def es_palabra(pal, nivel,clasificacion=999):
         '''Determina si el conjunto de letras ingresado es una palabra.
         En el caso del nivel 2 y 3 también verifica si pertenece al tipo de palabra correspondiente al nivel que se esta jugando.'''
@@ -285,6 +288,270 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
                         return False
         else:
             return False
+
+    def turno_COM (atrilCOM ,nivel, bolsaCOM, cant_COM, inicial, tema, puntajes, casillas_esp, puntCOM, clasificacion = 999):
+
+        colocada = False
+
+        letrasCOM = []
+        for i in atrilCOM:
+            letrasCOM.append(window.FindElement(i).GetText()) #guardo las letras del atril
+            print(letrasCOM)#
+
+        palabrasCOM = set()
+        for i in range(2, 8):
+            palabrasCOM.update((map("".join, it.permutations(letrasCOM, i)))) #formo todas las permutaciones posibles
+
+        pal_validas = []
+        for i in palabrasCOM:
+            if nivel == "nivel3":
+                if es_palabra(i, nivel, clasificacion): #filtro las palabras validas
+                    pal_validas.append(i)
+                    print("encontró una pal valida")#
+            else:
+                if es_palabra(i, nivel): #filtro las palabras validas
+                    pal_validas.append(i)
+                    print("encontró una pal valida")#
+
+        cambio = False
+        if len(pal_validas) == 0:
+            if cant_COM <= 3:
+                mezclar(atrilCOM, bolsaCOM)
+                cambio = True
+                return [colocada, cambio, inicial, puntCOM] #retorna si colocó la palabra, si cambio las letras y la variable "inicial"
+            # else:
+            #     termina el juego
+
+        else: #si tiene palabra valida
+            orientacion = seleccion_random() #0 es vertical y 1 es horizontal
+            if (inicial):
+                print("pal inicial")#
+                aux = random.randrange(len(pal_validas[0])) #la letra que ocupará la casilla inicial
+                if orientacion == 1: #si es horizontal
+                    ocupadas = []
+                    coordenada_inicial = "0"+str(7-aux)+"07" #calculo la key de la coordenada inicial
+                    for i in range(len(pal_validas[0])):
+                        aux_x = int(coordenada_inicial[0:2])+i
+                        if aux_x<10:
+                            aux_x = '0'+str(aux_x) #si el valor de la coordenada x es de un solo digito le agrego un 0 adelante
+                        else:
+                            aux_x = str(aux_x)
+
+                        window.FindElement(aux_x+'07').Update(text=pal_validas[0][i]) #coloco la letra
+                        window.FindElement(aux_x+'07').Update(image_filename='Imagenes/Temas/'+tema.lower()+'/'+pal_validas[0][i]+'_'+tema.lower()+'.png') #y la imagen
+                        ocupadas.append(aux_x+'07') #agrego la casilla ocupada a la lista
+
+                    desocupadasCOM = [] #keys que desocupa
+
+                    for i in range(len(pal_validas[0])): #itero las letras de la palabra ingresada
+                        for j in atrilCOM:
+                            if window.Element(j).GetText() == pal_validas[0][i]: #si la pos j del atril la contiene la elimino
+                                window.Element(j).Update(text = "")
+                                window.Element(j).Update(image_filename='Imagenes/Temas/invisible.png')
+                                desocupadasCOM.append(j) #agrego la key a la lista de keys desocupadas
+                                break
+
+                    mezclar(desocupadasCOM, bolsaCOM) #relleno el atril
+
+                    colocada = True
+                    inicial = False
+
+                    puntos = sumar_puntos(puntajes, casillas_esp, pal_validas[0], ocupadas, puntCOM) #hay que retornar los puntos
+
+                    del pal_validas
+                    print("Palabra colocada")
+                    return [colocada, cambio, inicial, puntos] #retorna si colocó la palabra, si cambio las letras y la variable "inicial"
+
+                else: #si es vertical
+                    ocupadas = []
+                    coordenada_inicial = "07"+"0"+str(7-aux) #calculo la key de la coordenada inicial
+                    for i in range(len(pal_validas[0])):
+                        aux_y = int(coordenada_inicial[2:])+i
+                        if aux_y<10:
+                            aux_y = '0'+str(aux_y) #si el valor de la coordenada x es de un solo digito le agrego un 0 adelante
+                        else:
+                            aux_y = str(aux_y)
+
+                        window.FindElement('07'+aux_y).Update(text=pal_validas[0][i]) #coloco la letra
+                        window.FindElement('07'+aux_y).Update(image_filename='Imagenes/Temas/'+tema.lower()+'/'+pal_validas[0][i]+'_'+tema.lower()+'.png') #y la imagen
+                        ocupadas.append('07'+aux_y) #agrego la casilla ocupada a la lista
+
+                    desocupadasCOM = [] #keys que desocupa
+
+                    for i in range(len(pal_validas[0])): #itero las letras de la palabra ingresada
+                        for j in atrilCOM:
+                            if window.Element(j).GetText() == pal_validas[0][i]: #si la pos j del atril la contiene la elimino
+                                window.Element(j).Update(text = "")
+                                window.Element(j).Update(image_filename='Imagenes/Temas/invisible.png')
+                                desocupadasCOM.append(j) #agrego la key a la lista de keys desocupadas
+                                break
+
+                    mezclar(desocupadasCOM, bolsaCOM) #relleno el atril
+
+                    colocada = True
+                    inicial = False
+
+                    puntos = sumar_puntos(puntajes, casillas_esp, pal_validas[0], ocupadas, puntCOM) #hay que retornar los puntos
+
+                    del pal_validas
+                    print("Palabra colocada")
+                    return [colocada, cambio, inicial, puntos] #retorna si colocó la palabra, si cambio las letras y la variable "inicial"
+
+            else:
+                intentos = 0 #cantididad de orientaciones intentadas (maximo 2)
+                while intentos < 2:
+
+                    if orientacion == 1: #cambio la orientación
+                        orientacion = 0
+                    else:
+                        orientacion = 1
+
+                    if orientacion == 1: #horizontal
+                        print("horizontal")#
+                        while len(pal_validas) > 0:
+                            invalidas = []
+                            colocada = False
+                            while colocada == False and len(invalidas) <= (15*(len(pal_validas[0])-1)): #mientras no haya colocado la palabra y haya coordenadas iniciales validas
+                                x = random.randrange(15-(len(pal_validas[0])-1))
+                                if x<10:
+                                    coordenada_inicial = '0'+str(x) #si el valor de la coordenada x es de un solo digito le agrego un 0 adelante
+                                else:
+                                    coordenada_inicial = str(x)
+
+                                y = random.randrange(15)
+                                if y<10:
+                                    coordenada_inicial = coordenada_inicial+'0'+str(y) #si el valor de la coordenada y es de un solo digito le agrego un 0 adelante
+                                else:
+                                    coordenada_inicial = coordenada_inicial+str(y)
+
+                                if not coordenada_inicial in invalidas: #si no verifiqué esta coordenada inicial
+                                    desocupadas = 0 #cantidad de casillas libres
+                                    for i in range(len(pal_validas[0])): #verifico que todas las casillas a ocupar no esten ocupadas
+                                        aux_X = int(coordenada_inicial[0:2])+i
+                                        if aux_X<10:
+                                            aux_X = '0'+str(aux_X) #si el valor de la coordenada x es de un solo digito le agrego un 0 adelante
+                                        else:
+                                            aux_X = str(aux_X)
+                                        if window.FindElement(aux_X+coordenada_inicial[2:]).GetText() == "": #si está desocupada
+                                            desocupadas = desocupadas + 1
+
+                                    if desocupadas == len(pal_validas[0]): #si todas las casillas están desocupadas coloco la palabra
+                                        ocupadas = [] #casillas ocupadas
+                                        for i in range(len(pal_validas[0])):
+                                            aux_x = int(coordenada_inicial[0:2])+i
+                                            if aux_x<10:
+                                                aux_x = '0'+str(aux_x) #si el valor de la coordenada x es de un solo digito le agrego un 0 adelante
+                                            else:
+                                                aux_x = str(aux_x)
+
+                                            window.FindElement(aux_x+coordenada_inicial[2:]).Update(text=pal_validas[0][i]) #coloco la letra
+                                            window.FindElement(aux_x+coordenada_inicial[2:]).Update(image_filename='Imagenes/Temas/'+tema.lower()+'/'+pal_validas[0][i]+'_'+tema.lower()+'.png') #y la imagen
+                                            ocupadas.append(aux_x+coordenada_inicial[2:]) #agrego la casilla ocupada a la lista
+
+                                        desocupadasCOM = [] #keys que desocupa
+
+                                        for i in range(len(pal_validas[0])): #itero las letras de la palabra ingresada
+                                            for j in atrilCOM:
+                                                if window.Element(j).GetText() == pal_validas[0][i]: #si la pos j del atril la contiene la elimino
+                                                    window.Element(j).Update(text = "")
+                                                    window.Element(j).Update(image_filename='Imagenes/Temas/invisible.png')
+                                                    desocupadasCOM.append(j) #agrego la key a la lista de keys desocupadas
+                                                    break
+
+                                        mezclar(desocupadasCOM, bolsaCOM) #relleno el atril
+
+                                        colocada = True
+
+                                        puntos = sumar_puntos(puntajes, casillas_esp, pal_validas[0], ocupadas, puntCOM) #hay que retornar los puntos
+
+                                        del pal_validas
+                                        print("Palabra colocada")
+                                        return [colocada, cambio, inicial, puntos] #retorna si colocó la palabra, si cambio las letras y la variable "inicial"
+
+                                    else:
+                                        invalidas.append(coordenada_inicial)
+
+                            if len(invalidas) > (15*(len(pal_validas[0])-1)): #si se acabaron las coordenadas iniciales validas (la palabra no entra)
+                                del pal_validas[0] #la segunda palabra pasa a ser la 0
+                                del invalidas #vacio la lista de coordenadas iniciales validas
+
+                    else: #si es vertical
+                        print("vertical")#
+                        while len(pal_validas) > 0:
+                            invalidas = []
+                            colocada = False
+                            while colocada == False and len(invalidas) <= (15*(len(pal_validas[0])-1)): #mientras no haya colocado la palabra y haya coordenadas iniciales validas
+                                x = random.randrange(15)
+                                if x<10:
+                                    coordenada_inicial = '0'+str(x) #si el valor de la coordenada x es de un solo digito le agrego un 0 adelante
+                                else:
+                                    coordenada_inicial = str(x)
+
+                                y = random.randrange(15-(len(pal_validas[0])-1))
+                                if y<10:
+                                    coordenada_inicial = coordenada_inicial+'0'+str(y) #si el valor de la coordenada y es de un solo digito le agrego un 0 adelante
+                                else:
+                                    coordenada_inicial = coordenada_inicial+str(y)
+
+                                if not coordenada_inicial in invalidas: #si no verifiqué esta coordenada inicial
+                                    desocupadas = 0 #cantidad de casillas libres
+                                    for i in range(len(pal_validas[0])): #verifico que todas las casillas a ocupar no esten ocupadas
+                                        aux_Y = int(coordenada_inicial[2:])+i
+                                        if aux_Y<10:
+                                            aux_Y = '0'+str(aux_Y) #si el valor de la coordenada x es de un solo digito le agrego un 0 adelante
+                                        else:
+                                            aux_Y = str(aux_Y)
+                                        if window.FindElement(coordenada_inicial[0:2]+aux_Y).GetText() == "": #si está desocupada
+                                            desocupadas = desocupadas + 1
+
+                                    if desocupadas == len(pal_validas[0]): #si todas las casillas están desocupadas coloco la palabra
+                                        ocupadas = [] #casillas ocupadas
+                                        for i in range(len(pal_validas[0])):
+                                            aux_y = int(coordenada_inicial[2:])+i
+                                            if aux_y<10:
+                                                aux_y = '0'+str(aux_y) #si el valor de la coordenada x es de un solo digito le agrego un 0 adelante
+                                            else:
+                                                aux_y = str(aux_y)
+
+                                            window.FindElement(coordenada_inicial[0:2]+aux_y).Update(text=pal_validas[0][i]) #coloco la letra
+                                            window.FindElement(coordenada_inicial[0:2]+aux_y).Update(image_filename='Imagenes/Temas/'+tema.lower()+'/'+pal_validas[0][i]+'_'+tema.lower()+'.png') #y la imagen
+                                            ocupadas.append(coordenada_inicial[0:2]+aux_y) #agrego la casilla ocupada a la lista
+
+                                        desocupadasCOM = [] #keys que desocupa
+
+                                        for i in range(len(pal_validas[0])): #itero las letras de la palabra ingresada
+                                            for j in atrilCOM:
+                                                if window.Element(j).GetText() == pal_validas[0][i]: #si la pos j del atril la contiene la elimino
+                                                    window.Element(j).Update(text = "")
+                                                    window.Element(j).Update(image_filename='Imagenes/Temas/invisible.png')
+                                                    desocupadasCOM.append(j) #agrego la key a la lista de keys desocupadas
+                                                    break
+
+                                        mezclar(desocupadasCOM, bolsaCOM) #relleno el atril
+
+                                        colocada = True
+
+                                        puntos = sumar_puntos(puntajes, casillas_esp, pal_validas[0], ocupadas, puntCOM) #hay que retornar los puntos
+
+                                        del pal_validas
+                                        print("Palabra colocada")
+                                        return [colocada, cambio, inicial, puntos] #retorna si colocó la palabra, si cambio las letras y la variable "inicial"
+
+                                    else:
+                                        invalidas.append(coordenada_inicial)
+
+                            if len(invalidas) > (15*(len(pal_validas[0])-1)): #si se acabaron las coordenadas iniciales validas (la palabra no entra)
+                                del pal_validas[0] #la segunda palabra pasa a ser la 0
+                                del invalidas #vacio la lista de coordenadas iniciales validas
+
+                    intentos += 1 #ya intenté con una orientacion
+
+                if cant_COM <= 3: #si no pudo poner la palabra en vertical ni en horizontal intenta cambiar letras
+                    mezclar(atrilCOM, bolsaCOM)
+                    cambio = True
+                    return [colocada, cambio, inicial, puntCOM] #retorna si colocó la palabra, si cambio las letras y la variable "inicial"
+                # else:
+                #     termina el juego
 
     def devolver(fichas_desocupadas, casillas_ocupadas):
         '''Devuelve las letras al atril en caso de que una palabra sea incorrecta'''
@@ -403,6 +670,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
     dic_spelling = {} #diccionario de pattern modificado (sin tildes)
     cargar_diccionarios(dic_verbs, dic_lexicon, dic_spelling) #modifico las palabras (les quito las tildes)
     bolsa = llenar_bolsa(nivel) #lleno la bolsa del jugador
+    bolsaCOM = bolsa #lleno la bolsa de la computadora
     puntajes = cargar_puntajes() #cargo los puntajes de las fichas
     casillasESP = cargar_casillas_especiales(nivel)
     if (nivel == 'nivel3'): #se selecciona el tipo de palabra a utilizar
@@ -415,6 +683,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
     #keys de las casillas y las posiciones del atril (se usa para saber dónde clickea el jugador)
     casillas = cargar_casillas()
     atril = ['J1','J2','J3','J4','J5','J6','J7']
+    atrilCOM = ['C1','C2','C3','C4','C5','C6','C7']
 
     #layout del tablero
     tablero = cargar_tablero(casillasESP,nivel) #las casillas especiales se mandarían como parametro para configurar el color de c/u
@@ -455,7 +724,8 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
     colExtras = [
             [sg.Frame('',frameAtrilCOM,border_width=8)], #atril de la PC
             [sg.Frame('PUNTAJE COMPUADORA', puntCOM, title_color='white',background_color='black', key= 'LC')], #puntaje de la PC
-            [sg.Text('')],
+            #[sg.Text('')],
+            [sg.Button("COM")],
             [sg.Text('')],
             [sg.Text('')],
             [sg.Frame('Tiempo',frameTiempo, title_color='white',background_color='black')],
@@ -492,11 +762,11 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
 
     for i in range(1,8): #de 1 a 7
         aux = 'C'+str(i) #aux es la key de la pos del atril de la Computadora a actualizar
-        indice = random.randrange(len(bolsa)) #tomo una letra random de la bolsa de letras
-        window.Element(aux).Update(text=bolsa[indice]) #la pongo como texto del boton correspondiente
+        indice = random.randrange(len(bolsaCOM)) #tomo una letra random de la bolsa de letras
+        window.Element(aux).Update(text=bolsaCOM[indice]) #la pongo como texto del boton correspondiente
         let = window.Element(aux).GetText() #guardo la letra que acabo de colocar en el atril
         window.Element(aux).Update(image_filename = 'Imagenes/Temas/'+tema.lower()+'/'+let+'_'+tema.lower()+'.png') #le coloco la imagen correspondiente al botón
-        del bolsa[indice] #la elimino de la bolsa
+        del bolsaCOM[indice] #la elimino de la bolsa
 
     for i in range(1,8): #lo mismo pero para el atril del Jugador
         aux = 'J'+str(i)
@@ -518,7 +788,8 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
     totalCOM = 0 #puntos de la PC
     cambioActivado = False #si se están cambiando l etras
     a_cambiar = [] #lista de pos de atril a cambiar con mezclar()
-    cant=1 #cantidad de veces que apreta "Cambiar letras"
+    cant = 1 #cantidad de veces que el jugador apreta "Cambiar letras"
+    cant_COM = 1 #cantidad de veces que la computadora apreta "Cambiar letras"
 
     actual_time = 0
     paused = False
@@ -528,7 +799,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
         if event is None:
             break
         if actual_time == (int(tiempo)*60)*100:       #CENTESIMAS
-            sg.Popup('Terminó el Tiempo')
+            sg.Popup('Terminó el Tiempo', no_titlebar = True)
             calcular_top10(nivel,totalJUG)
             paused = True
             break
@@ -549,7 +820,6 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
                 paused = False #Pongo play
                 start_time = start_time + int(round(time.time() * 100)) - paused_time #Retomo desde donde quedé
 
-
         if event == 'pausa':
             if window.Element('pausa').GetText() == 'Pausa':
                 paused = True
@@ -559,6 +829,27 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
                 paused = False
                 start_time = start_time + int(round(time.time() * 100)) - paused_time
                 window.Element('pausa').Update(text='Pausa')
+
+        elif event == "COM":
+            if nivel == "nivel3":
+                aux = turno_COM(atrilCOM ,nivel, bolsaCOM, cant_COM, inicial, tema, puntajes, casillasESP, totalCOM, clasificacion)
+                if aux[0]:
+                    totalCOM = aux[3]
+                    window.Element("PC").Update(value = str(totalCOM))
+                    print(totalCOM)
+                if aux[1]:
+                    cant_COM += 1
+                inicial = aux[2]
+
+            else:
+                aux = turno_COM(atrilCOM ,nivel, bolsaCOM, cant_COM, inicial, tema, puntajes, casillasESP, totalCOM)
+                if aux[0]:
+                    totalCOM = aux[3]
+                    window.Element("PC").Update(value = str(totalCOM))
+                    print(totalCOM)
+                if aux[1]:
+                    cant_COM += 1
+                inicial = aux[2]
 
 
         elif event == 'CAMBIO' and len(palabra) == 0: #solo puedo cambiar letras si no coloqué ninguna en el tablero
