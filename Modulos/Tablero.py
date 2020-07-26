@@ -242,18 +242,16 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
                         aux = True
         return aux
 
-    def elegir_clasificacion ():
-        '''Mediante un random decide que tipo de palabra será la admitida en el nivel 3
-        0 -> Adjetivos
-        1 -> Verbos'''
-
-        if random.randint(0, 1) == 1:
-            return 'VB' #verbos
-        else:
-            return 'JJ' #adjetivos
-
     def seleccion_random ():
+        '''Multiples usos: turno, tipo de palabra en el nivel 3, orientacion de las palabras de la computadora'''
         return(random.randint(0,1))
+
+    def cambio_turno(turno):
+        '''Cambia el turno'''
+        if turno == 1: #1 es jugador
+            return 0
+        else: #0 es la compu
+            return 1
 
     def es_palabra(pal, nivel,clasificacion=999):
         '''Determina si el conjunto de letras ingresado es una palabra.
@@ -678,10 +676,12 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
     puntajes = cargar_puntajes() #cargo los puntajes de las fichas
     casillasESP = cargar_casillas_especiales(nivel)
     if (nivel == 'nivel3'): #se selecciona el tipo de palabra a utilizar
-        clasificacion= elegir_clasificacion()
-        if clasificacion == 'VB': #mensaje para el usuario
+        aux = seleccion_random()
+        if aux == 0: #mensaje para el usuario
+            clasificacion = 'VB'
             sg.PopupNoButtons('En esta partida solo se usaran verbos',auto_close=True,auto_close_duration=3,no_titlebar=True)
         else:
+            clasificacion = 'JJ'
             sg.PopupNoButtons('En esta partida solo se usaran adjetivos',auto_close=True,auto_close_duration=3,no_titlebar=True)
 
     #keys de las casillas y las posiciones del atril (se usa para saber dónde clickea el jugador)
@@ -724,20 +724,20 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
         [sg.Text('', size=(21,1), font=('Timer', 20), justification='center', key='time')]
     ] #Interfaz del cronometro
 
+    frameTurno = [
+        [sg.Text('', size=(21,1), font=('', 10), justification='center', background_color = 'grey', key='turno')]
+    ] #Interfaz del turno
     #elementos de la derecha de la ventana
     colExtras = [
-            [sg.Frame('',frameAtrilCOM,border_width=8)], #atril de la PC
-            [sg.Frame('PUNTAJE COMPUADORA', puntCOM, title_color='white',background_color='black', key= 'LC')], #puntaje de la PC
-            #[sg.Text('')],
-            [sg.Button("COM")],
+            [sg.Text('                    '),sg.Frame('Turno', frameTurno, title_color='black',background_color='white')],
             [sg.Text('')],
+            [sg.Frame('',frameAtrilCOM,border_width=8)], #atril de la PC
+            [sg.Frame('PUNTAJE COMPUTADORA', puntCOM, title_color='white',background_color='black', key= 'LC')], #puntaje de la PC
             [sg.Text('')],
             [sg.Frame('Tiempo',frameTiempo, title_color='white',background_color='black')],
             [sg.Text('')],
             [sg.Button('Pausa', size=(23,1), key='pausa', button_color = ('black','white')),sg.Button('Reglas', size=(23,1), pad=(8,0), button_color = ('black','white'), key = 'reglas')],
             [sg.Button('Terminar', size=(23,1), key='terminar', button_color=('black','white')), sg.Button('Guardar Partida', size=(23,1),pad=(8,0), key='guardar', button_color=('black', 'white'))], #Falta implementacion
-            [sg.Text('')],
-            [sg.Text('')],
             [sg.Text('')],
             [sg.Text('')],
             [sg.Text('')],
@@ -794,16 +794,18 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
     a_cambiar = [] #lista de pos de atril a cambiar con mezclar()
     cant = 1 #cantidad de veces que el jugador apreta "Cambiar letras"
     cant_COM = 1 #cantidad de veces que la computadora apreta "Cambiar letras"
+    turno = seleccion_random() #Elige quien comienza el juego
+    error = 0 #Cantidad de veces que una palabra ingresada no es válida
 
     actual_time = 0
     paused = False
     start_time = int(round(time.time() * 100))
     while True:
-        event, values = window.Read(timeout=10)  #Ni idea que hace el timeout
+        event, values = window.Read(timeout=5)  #Ni idea que hace el timeout
         if event is None:
             break
         if actual_time >= (int(tiempo)*60)*100:       #CENTESIMAS
-            sg.Popup('Terminó el Tiempo', no_titlebar = True)
+            sg.PopupNoButtons('Terminó el Tiempo', auto_close = True, auto_close_duration = 3, no_titlebar = True)
             calcular_top10(nivel,totalJUG)
             window.Close()
             GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2)
@@ -815,29 +817,10 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
         else:
             event,values = window.Read()
 
-
-        if event == 'reglas':
-            paused = True #Pongo en pausa el tiempo
-            paused_time = int(round(time.time() * 100)) #Guardo donde quedo el tiempo
-            if nivel == 'nivel1' or nivel == 'nivel2':
-                Reglas.main(nivel)
-            else:
-                Reglas.main(nivel,clasificacion)
-            if Reglas.reanudar_reloj():
-                paused = False #Pongo play
-                start_time = start_time + int(round(time.time() * 100)) - paused_time #Retomo desde donde quedé
-
-        if event == 'pausa':
-            if window.Element('pausa').GetText() == 'Pausa':
-                paused = True
-                paused_time = int(round(time.time() * 100))
-                window.Element('pausa').Update(text='Continuar')
-            else:
-                paused = False
-                start_time = start_time + int(round(time.time() * 100)) - paused_time
-                window.Element('pausa').Update(text='Pausa')
-
-        elif event == "COM":
+        if turno == 0: #0 turno de PC
+            window.Element('time').Update(value = '--:--')
+            window.Element('turno').Update(value = 'Computadora')
+            sg.PopupNoButtons('La compu está pensando', auto_close = True, auto_close_duration = 3, no_titlebar = True)
             if nivel == "nivel3":
                 aux = turno_COM(atrilCOM ,nivel, bolsaCOM, cant_COM, inicial, tema, puntajes, casillasESP, totalCOM, clasificacion)
                 if aux[0]: #indica si se coloco una palabra
@@ -846,12 +829,15 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
                     print(totalCOM)
                     inicial = aux[2] #modifica la variable "inicial"
                     if not aux[4]: #indica si no se pudo rellenar el atril
+                        sg.PopupNoButtons('No hay suficientes letras en la bolsa de la computadora para rellenar su atril',
+                        auto_close = True, auto_close_duration = 5, no_titlebar = True)
                         window.Close()
                         GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2)
                         break
                 elif aux[1]: #indica si se apreto el cambiar letras
                     cant_COM += 1
                 else: #si no pudo colocar una palabra, ni cambiar las letras, finaliza el juego
+                    sg.PopupNoButtons('La computadora no pudo formar ninguna palabra', auto_close = True, auto_close_duration=3, no_titlebar = True)
                     window.Close()
                     GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2)
                     break
@@ -864,167 +850,221 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
                     print(totalCOM)
                     inicial = aux[2] #modifica la variable "inicial"
                     if not aux[4]: #indica si no se pudo rellenar el atril
+                        sg.PopupNoButtons('No hay suficientes letras en la bolsa de la computadora para rellenar su atril',
+                        auto_close = True, auto_close_duration = 5, no_titlebar = True)
                         window.Close()
                         GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2)
                         break
                 elif aux[1]: #indica si se apreto el cambiar letras
                     cant_COM += 1
                 else: #si no pudo colocar una palabra, ni cambiar las letras, finaliza el juego
+                    sg.PopupNoButtons('La computadora no pudo formar ninguna palabra', auto_close = True, auto_close_duration=3, no_titlebar = True)
                     window.Close()
                     GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2)
                     break
+            turno = cambio_turno(turno)
+        else:
+            window.Element('turno').Update(value = nombre)
+            if event == 'reglas':
+                paused = True #Pongo en pausa el tiempo
+                paused_time = int(round(time.time() * 100)) #Guardo donde quedo el tiempo
+                if nivel == 'nivel1' or nivel == 'nivel2':
+                    Reglas.main(nivel)
+                else:
+                    Reglas.main(nivel,clasificacion)
+                if Reglas.reanudar_reloj():
+                    paused = False #Pongo play
+                    start_time = start_time + int(round(time.time() * 100)) - paused_time #Retomo desde donde quedé
 
-        elif event == 'CAMBIO' and len(palabra) == 0: #solo puedo cambiar letras si no coloqué ninguna en el tablero
-            if cant <=3:
-                activar() #hago utilizables los botones de cambio
-            else:
-                sg.PopupNoButtons('Esta función ya no esta disponible',auto_close=True,auto_close_duration=3,no_titlebar=True)
+            elif event == 'pausa':
+                if window.Element('pausa').GetText() == 'Pausa':
+                    paused = True
+                    paused_time = int(round(time.time() * 100))
+                    window.Element('pausa').Update(text='Continuar')
+                else:
+                    paused = False
+                    start_time = start_time + int(round(time.time() * 100)) - paused_time
+                    window.Element('pausa').Update(text='Pausa')
+
+            elif event == 'CAMBIO' and len(palabra) == 0: #solo puedo cambiar letras si no coloqué ninguna en el tablero
+                if cant <=3:
+                    activar() #hago utilizables los botones de cambio
+                else:
+                    sg.PopupNoButtons('Esta función ya no esta disponible',auto_close=True,auto_close_duration=3,no_titlebar=True)
 
 
-        elif event == 'TODAS': #cambia todas las letras del atril
-            if mezclar(atril, bolsa,True):
-                cant += 1 #incremento la variable que cuenta las veces que se apretó "Cambiar letras"
-            desactivar() #hago invisibles los botones de cambio
-
-
-        elif event == 'ALGUNAS': #cambia letras especificas del atril (elif auxiliares abajo)
-            window.Element('OK').Update(visible = True) #hago visibles los botones para cambiar algunas letras
-            window.Element('CancelAlgunas').Update(visible = True)
-            window.Element('TODAS').Update(disabled = True) #desactivo el boton TODAS
-            window.Element('CANCEL').Update(disabled = True) #desactivo cancel general
-            cambioActivado = True #activo cambio activado
-            for i in atril:
-                window.Element(i).Update(disabled = False) #activo los clicks en el atril
-            window.Element('ALGUNAS').Update(disabled = True) #desactivo el botón que acabo de apretar
-
-
-        elif event == 'OK': #cambia las letras seleccionadas
-            if len(a_cambiar)>0: #si seleccioné letras
-                if mezclar(a_cambiar, bolsa,True):
+            elif event == 'TODAS': #cambia todas las letras del atril
+                if mezclar(atril, bolsa,True):
                     cant += 1 #incremento la variable que cuenta las veces que se apretó "Cambiar letras"
-                    for i in a_cambiar:
-                        window.Element(i).Update(button_color = ('black','white')) #vuelve a poner en blanco a todas las letras del atril
                 else:
-                    for i in a_cambiar:
-                        window.Element(i).Update(button_color = ('black','white')) #vuelve a poner en blanco a todas las letras del atril
-                        l = window.Element(i).GetText() #guardo la letra
-                        window.Element(i).Update(image_filename = 'Imagenes/Temas/'+tema.lower()+'/'+l+'_'+tema.lower()+'.png') #le coloco la imagen original
-                a_cambiar = []
-                desactivar() #hago utilizables los botones de cambio
-                cambioActivado = False #desactivo el cambio para que el atril vuelva a funcionar con normalidad
-                window.Element('CancelAlgunas').Update(visible = False)
+                    if len(bolsa) == 0:
+                        sg.PopupNoButtons('No hay letras en la bolsa',auto_close = True, auto_close_duration = 3, no_titlebar = True)
+                        window.Close()
+                        GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2)
+                        break
+                desactivar() #hago invisibles los botones de cambio
+                turno = cambio_turno(turno)
+
+
+            elif event == 'ALGUNAS': #cambia letras especificas del atril (elif auxiliares abajo)
+                window.Element('OK').Update(visible = True) #hago visibles los botones para cambiar algunas letras
+                window.Element('CancelAlgunas').Update(visible = True)
+                window.Element('TODAS').Update(disabled = True) #desactivo el boton TODAS
+                window.Element('CANCEL').Update(disabled = True) #desactivo cancel general
+                cambioActivado = True #activo cambio activado
+                for i in atril:
+                    window.Element(i).Update(disabled = False) #activo los clicks en el atril
+                window.Element('ALGUNAS').Update(disabled = True) #desactivo el botón que acabo de apretar
+
+
+            elif event == 'OK': #cambia las letras seleccionadas
+                if len(a_cambiar)>0: #si seleccioné letras
+                    if mezclar(a_cambiar, bolsa,True):
+                        cant += 1 #incremento la variable que cuenta las veces que se apretó "Cambiar letras"
+                        for i in a_cambiar:
+                            window.Element(i).Update(button_color = ('black','white')) #vuelve a poner en blanco a todas las letras del atril
+                    else:
+                        for i in a_cambiar:
+                            window.Element(i).Update(button_color = ('black','white')) #vuelve a poner en blanco a todas las letras del atril
+                            l = window.Element(i).GetText() #guardo la letra
+                            window.Element(i).Update(image_filename = 'Imagenes/Temas/'+tema.lower()+'/'+l+'_'+tema.lower()+'.png') #le coloco la imagen original
+                        if len(bolsa) == 0:
+                            sg.PopupNoButtons('No hay letras en la bolsa',auto_close = True, auto_close_duration = 3, no_titlebar = True)
+                            window.Close()
+                            GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2)
+                            break
+                    a_cambiar = []
+                    desactivar() #hago utilizables los botones de cambio
+                    cambioActivado = False #desactivo el cambio para que el atril vuelva a funcionar con normalidad
+                    window.Element('CancelAlgunas').Update(visible = False)
+                    window.Element('OK').Update(visible = False) #hago invisibles los botones para cambiar algunas letras
+                    turno = cambio_turno(turno)
+
+
+            elif event == 'CancelAlgunas': #cancelo el cambio de algunas letras
                 window.Element('OK').Update(visible = False) #hago invisibles los botones para cambiar algunas letras
+                window.Element('CancelAlgunas').Update(visible = False)
+                window.Element('CANCEL').Update(disabled = False) #activo cancel general
+                window.Element('TODAS').Update(disabled = False) #activo el boton TODAS
+                cambioActivado = False #desactivo cambio activado
+                for i in a_cambiar:
+                    window.Element(i).Update(button_color = ('black','white')) #vuelve a poner en blanco a todas las letras del atril
+                    l = window.Element(i).GetText() #guardo la letra
+                    window.Element(i).Update(image_filename = 'Imagenes/Temas/'+tema.lower()+'/'+l+'_'+tema.lower()+'.png') #le coloco la imagen original
+                a_cambiar = [] #vacío la lista de fichas a cambiar
+                for i in atril:
+                    window.Element(i).Update(disabled = True) #desactivo los clicks en el atril
+                window.Element('ALGUNAS').Update(disabled = False) #activo el botón que acabo de apretar
 
 
-        elif event == 'CancelAlgunas': #cancelo el cambio de algunas letras
-            window.Element('OK').Update(visible = False) #hago invisibles los botones para cambiar algunas letras
-            window.Element('CancelAlgunas').Update(visible = False)
-            window.Element('CANCEL').Update(disabled = False) #activo cancel general
-            window.Element('TODAS').Update(disabled = False) #activo el boton TODAS
-            cambioActivado = False #desactivo cambio activado
-            for i in a_cambiar:
-                window.Element(i).Update(button_color = ('black','white')) #vuelve a poner en blanco a todas las letras del atril
-                l = window.Element(i).GetText() #guardo la letra
-                window.Element(i).Update(image_filename = 'Imagenes/Temas/'+tema.lower()+'/'+l+'_'+tema.lower()+'.png') #le coloco la imagen original
-            a_cambiar = [] #vacío la lista de fichas a cambiar
-            for i in atril:
-                window.Element(i).Update(disabled = True) #desactivo los clicks en el atril
-            window.Element('ALGUNAS').Update(disabled = False) #activo el botón que acabo de apretar
+            elif event == 'CANCEL': #cancelo el cambio de letras y vuelvo a la funcionalidad normal del atril
+                desactivar()
+                cant -= 1 #decremento la variable que cuenta las veces que se apreta "Cambiar letras"
 
 
-        elif event == 'CANCEL': #cancelo el cambio de letras y vuelvo a la funcionalidad normal del atril
-            desactivar()
-            cant -= 1 #decremento la variable que cuenta las veces que se apreta "Cambiar letras"
-
-
-        elif event in atril: #si hago click en una letra del atril
-            print('entro a atril. cambioActivado: '+str(cambioActivado))
-            if cambioActivado: #si estoy cambiando letras
-                if event in a_cambiar: #si ya está seleccionada la letra que elijo
-                    a_cambiar.remove(event) #la elimino de la lista de seleccionadas
-                    window.Element(event).Update(button_color = ('black','white')) #le devuelvo el color original
-                    l = window.Element(event).GetText() #guardo la letra
-                    window.Element(event).Update(image_filename = 'Imagenes/Temas/'+tema.lower()+'/'+l+'_'+tema.lower()+'.png')#le devuelvo la imagen original
+            elif event in atril: #si hago click en una letra del atril
+                print('entro a atril. cambioActivado: '+str(cambioActivado))
+                if cambioActivado: #si estoy cambiando letras
+                    if event in a_cambiar: #si ya está seleccionada la letra que elijo
+                        a_cambiar.remove(event) #la elimino de la lista de seleccionadas
+                        window.Element(event).Update(button_color = ('black','white')) #le devuelvo el color original
+                        l = window.Element(event).GetText() #guardo la letra
+                        window.Element(event).Update(image_filename = 'Imagenes/Temas/'+tema.lower()+'/'+l+'_'+tema.lower()+'.png')#le devuelvo la imagen original
+                    else:
+                        a_cambiar.append(event)
+                        window.Element(event).Update(button_color = ('black','grey'))
+                        l = window.Element(event).GetText() #guardo la letra
+                        window.Element(event).Update(image_filename = 'Imagenes/Temas/'+tema.lower()+'BN/'+l+'_'+tema.lower()+'.png') #le coloco la imagen en Blanco y Negro
+                    print(a_cambiar)
                 else:
-                    a_cambiar.append(event)
-                    window.Element(event).Update(button_color = ('black','grey'))
-                    l = window.Element(event).GetText() #guardo la letra
-                    window.Element(event).Update(image_filename = 'Imagenes/Temas/'+tema.lower()+'BN/'+l+'_'+tema.lower()+'.png') #le coloco la imagen en Blanco y Negro
-                print(a_cambiar)
-            else:
-                posAtril = event #guarda la posicion en el atril de la letra clickeada
-                letra = window.Element(posAtril).GetText() #guarda la letra clickeada
+                    posAtril = event #guarda la posicion en el atril de la letra clickeada
+                    letra = window.Element(posAtril).GetText() #guarda la letra clickeada
 
 
-        elif event in casillas:#si hago click en una casilla del tablero
-            if letra != '': #si previamente clickee una letra del atril
-                if len(palabra) == 0: #si es la primer letra de la palabra
-                    anterior = colocar_letra(event, posAtril, letra, palabra, fichas_desocupadas, casillas_ocupadas) #coloco la letra en la casilla
-                    posAtril = '' #borro la pos guardada para que no se guarde varias veces en el tablero al clickearlo
-                    letra = '' #idem pero con la letra
-                elif len(palabra) == 1: #si es la segunda letra de la palabra
-                    resultado = consecutivo(event,anterior)
-                    if resultado[0]: #si la casilla (event) seleccionada es consecutivo a la letra anteriormente colocada
-                        orientacion = resultado[1] #guardo la orientacion
+            elif event in casillas:#si hago click en una casilla del tablero
+                if letra != '': #si previamente clickee una letra del atril
+                    if len(palabra) == 0: #si es la primer letra de la palabra
                         anterior = colocar_letra(event, posAtril, letra, palabra, fichas_desocupadas, casillas_ocupadas) #coloco la letra en la casilla
                         posAtril = '' #borro la pos guardada para que no se guarde varias veces en el tablero al clickearlo
                         letra = '' #idem pero con la letra
-                        print(orientacion) #
-                elif len(palabra) > 1: #si es la letra 3 o mayor (ya está definida la orientacion)
-                    if orientada(event, orientacion,anterior): #si la casilla es consecutiva según la orientación definida
-                        anterior = colocar_letra(event, posAtril, letra, palabra, fichas_desocupadas, casillas_ocupadas) #coloco la letra en la casilla
-                        posAtril = '' #borro la pos guardada para que no se guarde varias veces en el tablero al clickearlo
-                        letra = '' #idem pero con la letra
+                    elif len(palabra) == 1: #si es la segunda letra de la palabra
+                        resultado = consecutivo(event,anterior)
+                        if resultado[0]: #si la casilla (event) seleccionada es consecutivo a la letra anteriormente colocada
+                            orientacion = resultado[1] #guardo la orientacion
+                            anterior = colocar_letra(event, posAtril, letra, palabra, fichas_desocupadas, casillas_ocupadas) #coloco la letra en la casilla
+                            posAtril = '' #borro la pos guardada para que no se guarde varias veces en el tablero al clickearlo
+                            letra = '' #idem pero con la letra
+                            print(orientacion) #
+                    elif len(palabra) > 1: #si es la letra 3 o mayor (ya está definida la orientacion)
+                        if orientada(event, orientacion,anterior): #si la casilla es consecutiva según la orientación definida
+                            anterior = colocar_letra(event, posAtril, letra, palabra, fichas_desocupadas, casillas_ocupadas) #coloco la letra en la casilla
+                            posAtril = '' #borro la pos guardada para que no se guarde varias veces en el tablero al clickearlo
+                            letra = '' #idem pero con la letra
 
 
-        elif event == 'Confirmar Palabra':
-            orientacion = ''
-            word = ''.join(letra for letra in palabra) #junto las letras colocadas
-            print(word)
-            if nivel == 'nivel1' or nivel == 'nivel2':
-                v_palabra = es_palabra(word, nivel) #booleano para entrar al if de mas abajo
-            else:
-                v_palabra = es_palabra(word, nivel,clasificacion)
-            if v_palabra: #si es palabra
-                if inicial: #si la palabra que coloqué es la primera del juego
-                    if '0707' in casillas_ocupadas: #si la casilla inicial está ocupada
+            elif event == 'Confirmar Palabra':
+                orientacion = ''
+                word = ''.join(letra for letra in palabra) #junto las letras colocadas
+                print(word)
+                if nivel == 'nivel1' or nivel == 'nivel2':
+                    v_palabra = es_palabra(word, nivel) #booleano para entrar al if de mas abajo
+                else:
+                    v_palabra = es_palabra(word, nivel,clasificacion)
+                if v_palabra: #si es palabra
+                    if inicial: #si la palabra que coloqué es la primera del juego
+                        if '0707' in casillas_ocupadas: #si la casilla inicial está ocupada
+                            print('entra con puntos : ' + str(totalJUG)) #
+                            totalJUG = sumar_puntos(puntajes, casillasESP, palabra, casillas_ocupadas, totalJUG) #luego hay que ver si el que arma la palabra es el jugador o la maquina (totalJUG a modo de prueba)
+                            print('nuevo total: '+str(totalJUG)) #
+                            print() #
+                            window.Element('PJ').Update(value = totalJUG)
+                            mezclar(fichas_desocupadas, bolsa) #relleno el atril
+                            fichas_desocupadas = [] #reinicio la lista de fichas desocupadas
+                            inicial = False #desactivo la variable que indica que la palabra inicial aún no se colocó
+                            error = 0
+                            turno = cambio_turno(turno)
+                        else: #si está desocupada
+                            sg.PopupNoButtons("Una letra debe ocupar la casilla inicial", auto_close=True,auto_close_duration=3,no_titlebar=True) #informo el error
+                            devolver(fichas_desocupadas, casillas_ocupadas) #devuelve las letras al atril
+                            fichas_desocupadas = [] #reinicio la lista de fichas desocupadas
+                    else: #si no es la palabra incial prosigo normalmente
                         print('entra con puntos : ' + str(totalJUG)) #
                         totalJUG = sumar_puntos(puntajes, casillasESP, palabra, casillas_ocupadas, totalJUG) #luego hay que ver si el que arma la palabra es el jugador o la maquina (totalJUG a modo de prueba)
                         print('nuevo total: '+str(totalJUG)) #
                         print() #
                         window.Element('PJ').Update(value = totalJUG)
-                        mezclar(fichas_desocupadas, bolsa) #relleno el atril
-                        fichas_desocupadas = [] #reinicio la lista de fichas desocupadas
-                        inicial = False #desactivo la variable que indica que la palabra inicial aún no se colocó
-                    else: #si está desocupada
-                        sg.PopupNoButtons("Una letra debe ocupar la casilla inicial", auto_close=True,auto_close_duration=3,no_titlebar=True) #informo el error
-                        devolver(fichas_desocupadas, casillas_ocupadas) #devuelve las letras al atril
-                        fichas_desocupadas = [] #reinicio la lista de fichas desocupadas
-                else: #si no es la palabra incial prosigo normalmente
-                    print('entra con puntos : ' + str(totalJUG)) #
-                    totalJUG = sumar_puntos(puntajes, casillasESP, palabra, casillas_ocupadas, totalJUG) #luego hay que ver si el que arma la palabra es el jugador o la maquina (totalJUG a modo de prueba)
-                    print('nuevo total: '+str(totalJUG)) #
-                    print() #
-                    window.Element('PJ').Update(value = totalJUG)
-                    mezclar(fichas_desocupadas, bolsa) #relleno el atril
+                        if mezclar(fichas_desocupadas, bolsa): #relleno el atril
+                            fichas_desocupadas = [] #reinicio la lista de fichas desocupadas
+                        else:
+                            sg.PopupNoButtons('No hay suficientes letras en la bolsa del jugador para rellenar su atril',
+                            auto_close = True, auto_close_duration = 5, no_titlebar = True)
+                            window.Close()
+                            GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2)
+                            break
+                        error = 0
+                        turno = cambio_turno(turno)
+                else:
+                    print(word+' no es palabra') #
+                    sg.PopupNoButtons(word + ' no es palabra', auto_close=True, auto_close_duration=3, no_titlebar=True)
+                    if '0707' in casillas_ocupadas: #si era la palabra inicial vuelvo a activar la variable que indica que se colocará la primer palabra del juego
+                        inicial = True
+                    devolver(fichas_desocupadas, casillas_ocupadas) #devuelve las letras al atril
                     fichas_desocupadas = [] #reinicio la lista de fichas desocupadas
-            else:
-                print(word+' no es palabra') #
-                sg.PopupNoButtons(word + ' no es palabra', auto_close=True, auto_close_duration=3, no_titlebar=True)
-                if '0707' in casillas_ocupadas: #si era la palabra inicial vuelvo a activar la variable que indica que se colocará la primer palabra del juego
-                    inicial = True
-                devolver(fichas_desocupadas, casillas_ocupadas) #devuelve las letras al atril
-                fichas_desocupadas = [] #reinicio la lista de fichas desocupadas
-            palabra = [] #reinicio la lista
-            casillas_ocupadas = [] #idem
+                    error += 1
+                    if error == 3:
+                        error = 0
+                        sg.PopupNoButtons('Ingresaste 3 palabras inválidas, perdes el turno', auto_close = True, auto_close_duration = 4, no_titlebar = True)
+                        turno = cambio_turno(turno)
+                palabra = [] #reinicio la lista
+                casillas_ocupadas = [] #idem
+
+            elif event == 'terminar':
+                calcular_top10(nivel,totalJUG)
+                window.Close()
+                GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2)
+                break
 
 
-        elif event == 'terminar':
-            calcular_top10(nivel,totalJUG)
-            window.Close()
-            GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2)
-            break
-            
         window.FindElement('time').Update('{:02d}:{:02d}'.format((actual_time // 100) // 60,(actual_time // 100) % 60))
 
     window.Close()
