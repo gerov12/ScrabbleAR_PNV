@@ -1,13 +1,14 @@
 import PySimpleGUI as sg
+import sys
 import json
+import time
 import random
 import pattern.es
-#import ScrabbleAR
-from Modulos import Reglas
-import time
-from pattern.es import tag
-import sys
 import itertools as it
+from pattern.es import tag
+from Modulos import Reglas
+from Modulos import GameOver
+
 
 def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modificado = False, modificado2 = False):
     def cargar_diccionarios(dic_verbs, dic_lexicon, dic_spelling):
@@ -162,9 +163,10 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
         for i in atril:
             window.Element(i).Update(disabled = False) #activo los clicks en el atril
 
-    def mezclar(datos, bolsa):
+    def mezclar(datos, bolsa,clickeo=False):
         '''Cambia las letras en 'datos' por letras al azar de la bolsa ('datos' contiene las fichas del atril a cambiar).
         De no tener suficientes fichas en la bolsa no realiza modificaciónes y avisa al jugador con un Popup'''
+        aux=False #aux indica si se cambiaron las letras
         if len(bolsa) >= len(datos): #si tengo 7 o mas elementos en la bolsa, entro
             for i in datos:
                 pos = random.randrange(len(bolsa))
@@ -172,11 +174,13 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
                 let = window.Element(i).GetText() #guardo la letra que acabo de colocar en el atril
                 window.Element(i).Update(image_filename = 'Imagenes/Temas/'+tema.lower()+'/'+let+'_'+tema.lower()+'.png') #le coloco la imagen correspondiente al botón
                 del bolsa[pos]
-            return True #Si cambio las letras
+            aux=True #Si cambio las letras
         elif len(bolsa) < len(datos):
-            sg.PopupNoButtons('Solo se pueden cambiar '+str(len(bolsa))+' letras.',auto_close=True,auto_close_duration=3,no_titlebar=True)
+            if (clickeo):
+                sg.PopupNoButtons('Solo se pueden cambiar '+str(len(bolsa))+' letras.',auto_close=True,auto_close_duration=3,no_titlebar=True)
         else:
-            sg.PopupNoButtons('No quedan letras en la bolsa',auto_close=True,auto_close_duration=3,no_titlebar=True)
+            sg.PopupNoButtons('No quedan letras en la bolsa',auto_close=True,auto_close_duration=3,no_titlebar=True) #?
+        return aux
 
     def colocar_letra(casilla, posA, let, pal, fichas_desocupadas, casillas_ocupadas):
         '''Coloca la letra en la casilla correspondiente y la quita del atril.
@@ -260,7 +264,6 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
             if not pal.lower() in dic_verbs:
                 if pal.lower() in dic_lexicon:
                     print(pal + " en lexicon")
-                    aux = True
                     if pal.lower() in dic_spelling:
                         print(pal + " en spelling")
                         aux = True
@@ -316,12 +319,12 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
         cambio = False
         if len(pal_validas) == 0:
             if cant_COM <= 3:
-                mezclar(atrilCOM, bolsaCOM)
-                cambio = True
+                cambio = mezclar(atrilCOM, bolsaCOM)
                 return [colocada, cambio, inicial, puntCOM] #retorna si colocó la palabra, si cambio las letras y la variable "inicial"
-            # else:
-            #     termina el juego
-
+            else:
+                window.Close()
+                GameOver(totalJUG,puntCOM)
+                sys.exit()
         else: #si tiene palabra valida
             orientacion = seleccion_random() #0 es vertical y 1 es horizontal
             if (inicial):
@@ -351,7 +354,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
                                 desocupadasCOM.append(j) #agrego la key a la lista de keys desocupadas
                                 break
 
-                    mezclar(desocupadasCOM, bolsaCOM) #relleno el atril
+                    relleno = mezclar(desocupadasCOM, bolsaCOM) #relleno el atril
 
                     colocada = True
                     inicial = False
@@ -360,13 +363,13 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
 
                     del pal_validas
                     print("Palabra colocada")
-                    return [colocada, cambio, inicial, puntos] #retorna si colocó la palabra, si cambio las letras y la variable "inicial"
+                    return [colocada, cambio, inicial, puntos, relleno] #retorna si colocó la palabra, si cambio las letras , la variable "inicial" y si pudo rellenar el atril
 
                 else: #si es vertical
                     ocupadas = []
-                    coordenada_inicial = "07"+"0"+str(7-aux) #calculo la key de la coordenada inicial
+                    coordenada_inicial = "07"+"0"+str(7+aux) #calculo la key de la coordenada inicial
                     for i in range(len(pal_validas[0])):
-                        aux_y = int(coordenada_inicial[2:])+i
+                        aux_y = int(coordenada_inicial[2:])-i
                         if aux_y<10:
                             aux_y = '0'+str(aux_y) #si el valor de la coordenada x es de un solo digito le agrego un 0 adelante
                         else:
@@ -386,7 +389,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
                                 desocupadasCOM.append(j) #agrego la key a la lista de keys desocupadas
                                 break
 
-                    mezclar(desocupadasCOM, bolsaCOM) #relleno el atril
+                    relleno = mezclar(desocupadasCOM, bolsaCOM) #relleno el atril
 
                     colocada = True
                     inicial = False
@@ -395,7 +398,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
 
                     del pal_validas
                     print("Palabra colocada")
-                    return [colocada, cambio, inicial, puntos] #retorna si colocó la palabra, si cambio las letras y la variable "inicial"
+                    return [colocada, cambio, inicial, puntos, relleno] #retorna si colocó la palabra, si cambio las letras , la variable "inicial" y si pudo rellenar el atril
 
             else:
                 intentos = 0 #cantididad de orientaciones intentadas (maximo 2)
@@ -458,7 +461,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
                                                     desocupadasCOM.append(j) #agrego la key a la lista de keys desocupadas
                                                     break
 
-                                        mezclar(desocupadasCOM, bolsaCOM) #relleno el atril
+                                        relleno = mezclar(desocupadasCOM, bolsaCOM) #relleno el atril
 
                                         colocada = True
 
@@ -466,7 +469,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
 
                                         del pal_validas
                                         print("Palabra colocada")
-                                        return [colocada, cambio, inicial, puntos] #retorna si colocó la palabra, si cambio las letras y la variable "inicial"
+                                        return [colocada, cambio, inicial, puntos, relleno]#retorna si colocó la palabra, si cambio las letras , la variable "inicial" y si pudo rellenar el atril
 
                                     else:
                                         invalidas.append(coordenada_inicial)
@@ -487,7 +490,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
                                 else:
                                     coordenada_inicial = str(x)
 
-                                y = random.randrange(15-(len(pal_validas[0])-1))
+                                y = random.randrange((0+len(pal_validas[0])),15)
                                 if y<10:
                                     coordenada_inicial = coordenada_inicial+'0'+str(y) #si el valor de la coordenada y es de un solo digito le agrego un 0 adelante
                                 else:
@@ -496,7 +499,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
                                 if not coordenada_inicial in invalidas: #si no verifiqué esta coordenada inicial
                                     desocupadas = 0 #cantidad de casillas libres
                                     for i in range(len(pal_validas[0])): #verifico que todas las casillas a ocupar no esten ocupadas
-                                        aux_Y = int(coordenada_inicial[2:])+i
+                                        aux_Y = int(coordenada_inicial[2:])-i
                                         if aux_Y<10:
                                             aux_Y = '0'+str(aux_Y) #si el valor de la coordenada x es de un solo digito le agrego un 0 adelante
                                         else:
@@ -507,7 +510,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
                                     if desocupadas == len(pal_validas[0]): #si todas las casillas están desocupadas coloco la palabra
                                         ocupadas = [] #casillas ocupadas
                                         for i in range(len(pal_validas[0])):
-                                            aux_y = int(coordenada_inicial[2:])+i
+                                            aux_y = int(coordenada_inicial[2:])-i
                                             if aux_y<10:
                                                 aux_y = '0'+str(aux_y) #si el valor de la coordenada x es de un solo digito le agrego un 0 adelante
                                             else:
@@ -527,7 +530,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
                                                     desocupadasCOM.append(j) #agrego la key a la lista de keys desocupadas
                                                     break
 
-                                        mezclar(desocupadasCOM, bolsaCOM) #relleno el atril
+                                        relleno = mezclar(desocupadasCOM, bolsaCOM) #relleno el atril
 
                                         colocada = True
 
@@ -535,7 +538,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
 
                                         del pal_validas
                                         print("Palabra colocada")
-                                        return [colocada, cambio, inicial, puntos] #retorna si colocó la palabra, si cambio las letras y la variable "inicial"
+                                        return [colocada, cambio, inicial, puntos, relleno] #retorna si colocó la palabra, si cambio las letras , la variable "inicial" y si pudo rellenar el atril
 
                                     else:
                                         invalidas.append(coordenada_inicial)
@@ -547,11 +550,12 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
                     intentos += 1 #ya intenté con una orientacion
 
                 if cant_COM <= 3: #si no pudo poner la palabra en vertical ni en horizontal intenta cambiar letras
-                    mezclar(atrilCOM, bolsaCOM)
-                    cambio = True
+                    cambio = mezclar(atrilCOM, bolsaCOM)
                     return [colocada, cambio, inicial, puntCOM] #retorna si colocó la palabra, si cambio las letras y la variable "inicial"
-                # else:
-                #     termina el juego
+                else:
+                    window.Close()
+                    GameOver.main(totalJUG, puntCOM, nombre, tema, nivel, tiempo, modificado, modificado2)
+                    sys.exit()
 
     def devolver(fichas_desocupadas, casillas_ocupadas):
         '''Devuelve las letras al atril en caso de que una palabra sea incorrecta'''
@@ -798,11 +802,14 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
         event, values = window.Read(timeout=10)  #Ni idea que hace el timeout
         if event is None:
             break
-        if actual_time == (int(tiempo)*60)*100:       #CENTESIMAS
+        if actual_time >= (int(tiempo)*60)*100:       #CENTESIMAS
             sg.Popup('Terminó el Tiempo', no_titlebar = True)
             calcular_top10(nivel,totalJUG)
+            window.Close()
+            GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2)
             paused = True
             break
+
         if not paused:
             actual_time = int(round(time.time() * 100)) - start_time
         else:
@@ -833,24 +840,39 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
         elif event == "COM":
             if nivel == "nivel3":
                 aux = turno_COM(atrilCOM ,nivel, bolsaCOM, cant_COM, inicial, tema, puntajes, casillasESP, totalCOM, clasificacion)
-                if aux[0]:
-                    totalCOM = aux[3]
+                if aux[0]: #indica si se coloco una palabra
+                    totalCOM = aux[3] #contiene los puntos totales de la computadora
                     window.Element("PC").Update(value = str(totalCOM))
                     print(totalCOM)
-                if aux[1]:
+                    inicial = aux[2] #modifica la variable "inicial"
+                    if not aux[4]: #indica si no se pudo rellenar el atril
+                        window.Close()
+                        GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2)
+                        break
+                elif aux[1]: #indica si se apreto el cambiar letras
                     cant_COM += 1
-                inicial = aux[2]
+                else: #si no pudo colocar una palabra, ni cambiar las letras, finaliza el juego
+                    window.Close()
+                    GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2)
+                    break
 
             else:
                 aux = turno_COM(atrilCOM ,nivel, bolsaCOM, cant_COM, inicial, tema, puntajes, casillasESP, totalCOM)
-                if aux[0]:
-                    totalCOM = aux[3]
+                if aux[0]: #indica si se coloco una palabra
+                    totalCOM = aux[3] #contiene los puntos totales de la computadora
                     window.Element("PC").Update(value = str(totalCOM))
                     print(totalCOM)
-                if aux[1]:
+                    inicial = aux[2] #modifica la variable "inicial"
+                    if not aux[4]: #indica si no se pudo rellenar el atril
+                        window.Close()
+                        GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2)
+                        break
+                elif aux[1]: #indica si se apreto el cambiar letras
                     cant_COM += 1
-                inicial = aux[2]
-
+                else: #si no pudo colocar una palabra, ni cambiar las letras, finaliza el juego
+                    window.Close()
+                    GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2)
+                    break
 
         elif event == 'CAMBIO' and len(palabra) == 0: #solo puedo cambiar letras si no coloqué ninguna en el tablero
             if cant <=3:
@@ -860,7 +882,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
 
 
         elif event == 'TODAS': #cambia todas las letras del atril
-            if mezclar(atril, bolsa):
+            if mezclar(atril, bolsa,True):
                 cant += 1 #incremento la variable que cuenta las veces que se apretó "Cambiar letras"
             desactivar() #hago invisibles los botones de cambio
 
@@ -878,7 +900,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
 
         elif event == 'OK': #cambia las letras seleccionadas
             if len(a_cambiar)>0: #si seleccioné letras
-                if mezclar(a_cambiar, bolsa):
+                if mezclar(a_cambiar, bolsa,True):
                     cant += 1 #incremento la variable que cuenta las veces que se apretó "Cambiar letras"
                     for i in a_cambiar:
                         window.Element(i).Update(button_color = ('black','white')) #vuelve a poner en blanco a todas las letras del atril
@@ -999,7 +1021,10 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
 
         elif event == 'terminar':
             calcular_top10(nivel,totalJUG)
+            window.Close()
+            GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2)
             break
+            
         window.FindElement('time').Update('{:02d}:{:02d}'.format((actual_time // 100) // 60,(actual_time // 100) % 60))
 
     window.Close()

@@ -45,12 +45,12 @@ def main():
     #     sg.Popup("La carpeta 'Imagenes' o la imagen solicitada no existen.", no_titlebar=True)
     #     sys.exit()
 
-    if not isfile("Imagenes/TituloScrabble1.png"): #si no existe la carpeta o la imagen advierte con un Popup y cierra el programa
+    if not isfile("Imagenes/Titulo/TituloScrabble1.png"): #si no existe la carpeta o la imagen advierte con un Popup y cierra el programa
         sg.Popup("La carpeta 'Imagenes' o la imagen solicitada no existen.", no_titlebar=True)
         sys.exit()
 
     layout = [
-        [sg.Image(filename = "Imagenes/TituloScrabble1.png", size=(400,200))],
+        [sg.Image(filename = "Imagenes/Titulo/TituloScrabble1.png", size=(400,200))],
         [sg.Button('Partida Rápida', size = (30, 2), pad=(90,4))],
         [sg.Button('Cargar Partida', size = (30, 2), pad=(90,4))],
         [sg.Button('Partida Personalizada', size = (30, 2), pad=(90,4))],
