@@ -3,7 +3,8 @@ import PySimpleGUI as sg
 from Modulos import Tablero
 
 def main (puntos_jugador,puntos_computadora,nombre, tema, nivel, tiempo, modificado, modificado2):
-    '''Define quien gano'''
+    '''Define quien gano o si hubo un empate y lo muestra con la imagen correspondiente
+    Si la imagen o la carpeta que las contiene no existe levanta una excepcion y lo informa con un Popup'''
 
     sg.ChangeLookAndFeel('DarkAmber')
 
@@ -19,7 +20,7 @@ def main (puntos_jugador,puntos_computadora,nombre, tema, nivel, tiempo, modific
                 [sg.Image(filename = "Imagenes/Fin/Ganador.png", size=(630,630))], [sg.Button('Volver a Jugar'),sg.Button('Menú'), sg.Button('Salir', button_color=('black','red'))],
                 [sg.Text('', size=(1,1))]
                 ]
-            print('Resultado Final             ---> Gano El Jugador')#
+            print('Resultado Final             ---> Ganó El Jugador')#
 
 
         elif puntos_computadora > puntos_jugador:
@@ -27,7 +28,7 @@ def main (puntos_jugador,puntos_computadora,nombre, tema, nivel, tiempo, modific
                 [sg.Image(filename = "Imagenes/Fin/Perdedor.png", size=(630,630))], [sg.Button('Volver a Jugar'),sg.Button('Menú'),sg.Button('Salir', button_color=('black','red'))],
                 [sg.Text('', size=(1,1))]
                 ]
-            print('Resultado Final             ---> Gano La Computadora')#
+            print('Resultado Final             ---> Ganó La Computadora')#
 
         else:
             fin = [
@@ -61,4 +62,4 @@ def main (puntos_jugador,puntos_computadora,nombre, tema, nivel, tiempo, modific
         sg.Popup('Error. No existe la carpeta "Imagenes" o la imagen solicitada.', no_titlebar=True)
 
 if __name__ =='__main__':
-    main(puntos_jugador,puntos_computadora)
+    main(0,0,"jugador", "Claro", "nivel1", 3.0, False, False)

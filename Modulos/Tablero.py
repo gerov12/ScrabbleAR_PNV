@@ -148,6 +148,25 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
             board.append(fila)
         return board
 
+    def inicializar_atriles(bolsa, bolsaCOM):
+        '''Inicializa los atriles para comenzar la partida'''
+
+        for i in range(1,8): #de 1 a 7
+            aux = 'C'+str(i) #aux es la key de la pos del atril de la Computadora a actualizar
+            indice = random.randrange(len(bolsaCOM)) #tomo una letra random de la bolsa de letras
+            window.Element(aux).Update(text=bolsaCOM[indice]) #la pongo como texto del boton correspondiente
+            let = window.Element(aux).GetText() #guardo la letra que acabo de colocar en el atril
+            window.Element(aux).Update(image_filename = 'Imagenes/Temas/'+tema.lower()+'/'+let+'_'+tema.lower()+'.png') #le coloco la imagen correspondiente al botón
+            del bolsaCOM[indice] #la elimino de la bolsa
+
+        for i in range(1,8): #lo mismo pero para el atril del Jugador
+            aux = 'J'+str(i)
+            indice = random.randrange(len(bolsa))
+            window.Element(aux).Update(text=bolsa[indice])
+            let = window.Element(aux).GetText() #guardo la letra que acabo de colocar en el atril
+            window.Element(aux).Update(image_filename = 'Imagenes/Temas/'+tema.lower()+'/'+let+'_'+tema.lower()+'.png') #le coloco la imagen correspondiente al botón
+            del bolsa[indice]
+
     def activar():
         '''Activa los botones para cambiar letras si el boton para hacerlo fue clickeado'''
 
@@ -286,7 +305,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
         else: #0 es la compu
             return 1
 
-    def es_palabra(pal, nivel,clasificacion = 999, clickeo = False):
+    def es_palabra(pal, nivel, clickeo = False, com = False, clasificacion = 999):
         '''Determina si el conjunto de letras ingresado es una palabra.
         En el caso del nivel 2 y 3 también verifica si pertenece al tipo de palabra correspondiente al nivel que se esta jugando.'''
 
@@ -322,13 +341,22 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
                         if clickeo:
                             sg.PopupNoButtons('Tipo de palabra no valido para este nivel',auto_close=True,auto_close_duration=4,no_titlebar=True)
                         return False
-        else:
+            elif com == False:
+                print(pal+' no es palabra') #
+                sg.PopupNoButtons(pal + ' no es palabra', auto_close=True, auto_close_duration=3, no_titlebar=True)
+                return False
+        elif com == False:
+            print(pal+' no es palabra') #
+            sg.PopupNoButtons(pal + ' no es palabra', auto_close=True, auto_close_duration=3, no_titlebar=True)
             return False
 
     def turno_COM (atrilCOM ,nivel, bolsaCOM, cant_COM, inicial, tema, puntajes, casillas_esp, puntCOM, clasificacion = 999):
-        '''Funcionamiento de la computadora: arma las palabras, verifica si son validas y si corresponden a la clasificacion
-        dependiendo del nivel, con un random decide la orientacion de la palabra, la coloca en el atril, rellena el atril con
-        nuevas letras (sino es posible armar una palabra cambia todas las letras del atril) y suma los puntos correspondientes'''
+        '''Funcionamiento de la computadora: arma todas las permutaciones posibles con las letras del atril, verifica si son
+        palabras validas y si corresponden a la clasificaciondependiendo del nivel, con un random decide la orientacion de la palabra,
+        la coloca en el tablero, rellena el atril con nuevas letras (si no es posible armar una palabra cambia todas las letras del atril)
+        y suma los puntos correspondientes
+        Retorna en una lista: si coloco una palabra (boolean), si cambio las letras de su atril (boolean), si el siguiente turno es el inicial o ya no (boolean)
+        su puntaje total actualizado (integer), y si colocó con exito una palabra tambien retorna un booleano que indica si logró rellenar su atril'''
 
         colocada = False
 
@@ -344,11 +372,11 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
         pal_validas = []
         for i in palabrasCOM:
             if nivel == "nivel3":
-                if es_palabra(i, nivel, clasificacion): #filtro las palabras validas
+                if es_palabra(i, nivel, False, True, clasificacion): #filtro las palabras validas (False de "clickeo" y True de "com")
                     pal_validas.append(i)
                     print("encontró una pal valida")#
             else:
-                if es_palabra(i, nivel): #filtro las palabras validas
+                if es_palabra(i, nivel, False, True): #filtro las palabras validas (False de "clickeo" y True de "com")
                     pal_validas.append(i)
                     print("encontró una pal valida")#
 
@@ -806,22 +834,12 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
     window = sg.Window('Tablero de nivel '+nivel[-1]).Layout(juego).Finalize()
     #Finalize() hace una especie de lectura de la ventana para que los cambios a los botones se apliquen
 
-    for i in range(1,8): #de 1 a 7
-        aux = 'C'+str(i) #aux es la key de la pos del atril de la Computadora a actualizar
-        indice = random.randrange(len(bolsaCOM)) #tomo una letra random de la bolsa de letras
-        window.Element(aux).Update(text=bolsaCOM[indice]) #la pongo como texto del boton correspondiente
-        let = window.Element(aux).GetText() #guardo la letra que acabo de colocar en el atril
-        window.Element(aux).Update(image_filename = 'Imagenes/Temas/'+tema.lower()+'/'+let+'_'+tema.lower()+'.png') #le coloco la imagen correspondiente al botón
-        del bolsaCOM[indice] #la elimino de la bolsa
+    inicializar_atriles(bolsa, bolsaCOM) #inicializa los atriles para comenzar la partida
 
-    for i in range(1,8): #lo mismo pero para el atril del Jugador
-        aux = 'J'+str(i)
-        indice = random.randrange(len(bolsa))
-        window.Element(aux).Update(text=bolsa[indice])
-        let = window.Element(aux).GetText() #guardo la letra que acabo de colocar en el atril
-        window.Element(aux).Update(image_filename = 'Imagenes/Temas/'+tema.lower()+'/'+let+'_'+tema.lower()+'.png') #le coloco la imagen correspondiente al botón
-        del bolsa[indice]
-
+    layout_COM = [
+        [sg.Text("             "), sg.Image("Imagenes/Gif/cargando.gif", key = "gif")],
+        [sg.Text("La computadora está trabajando...")]
+    ] #interfaz de la ventana del turno de la COM
 
     posAtril = '' #posicion en el atril de la letra clickeada
     letra = '' #letra clickeada
@@ -865,48 +883,53 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
             window.Element('pausa').Update(disabled = True)
             window.Element('time').Update(value = '--:--')
             window.Element('turno').Update(value = 'Computadora')
-            sg.PopupNoButtons('La compu está pensando', auto_close = True, auto_close_duration = 1, no_titlebar = True)
+
+            windowCOM = sg.Window('gif', no_titlebar = True).Layout(layout_COM).Finalize()
+            windowCOM.Element("gif").UpdateAnimation("Imagenes/Gif/cargando.gif", time_between_frames = 0) #no funciona
+
+            #sg.PopupNoButtons('La compu está pensando', auto_close = True, auto_close_duration = 1, no_titlebar = True)
             if nivel == "nivel3":
                 aux = turno_COM(atrilCOM ,nivel, bolsaCOM, cant_COM, inicial, tema, puntajes, casillasESP, totalCOM, clasificacion)
+                windowCOM.Close()
                 if aux[0]: #indica si se coloco una palabra
                     totalCOM = aux[3] #contiene los puntos totales de la computadora
                     window.Element("PC").Update(value = str(totalCOM))
                     print(totalCOM)
                     inicial = aux[2] #modifica la variable "inicial"
                     if not aux[4]: #indica si no se pudo rellenar el atril
-                        sg.PopupNoButtons('No hay suficientes letras en la bolsa de la computadora para rellenar su atril',
+                        sg.PopupNoButtons('No hay suficientes letras en la bolsa de la computadora para rellenar su atril.',
                         auto_close = True, auto_close_duration = 5, no_titlebar = True)
                         window.Close()
                         GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2)
                         break
-                elif not aux[0]:
-                        sg.PopupNoButtons('La computadora no pudo formar ninguna palabra, pierde el turno',
-                        auto_close = True, auto_close_duration = 4, no_titlebar = True)
                 elif aux[1]: #indica si se apreto el cambiar letras
                     cant_COM += 1
+                    sg.PopupNoButtons('La computadora no pudo formar ninguna palabra y cambió las letras de su atril.', auto_close = True, auto_close_duration=3, no_titlebar = True)
                 else: #si no pudo colocar una palabra, ni cambiar las letras, finaliza el juego
-                    sg.PopupNoButtons('La computadora no pudo formar ninguna palabra', auto_close = True, auto_close_duration=3, no_titlebar = True)
+                    sg.PopupNoButtons('La computadora no pudo formar ninguna palabra y no tiene más letras en su bolsa.', auto_close = True, auto_close_duration=3, no_titlebar = True)
                     window.Close()
                     GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2)
                     break
 
             else:
                 aux = turno_COM(atrilCOM ,nivel, bolsaCOM, cant_COM, inicial, tema, puntajes, casillasESP, totalCOM)
+                windowCOM.Close()
                 if aux[0]: #indica si se coloco una palabra
                     totalCOM = aux[3] #contiene los puntos totales de la computadora
                     window.Element("PC").Update(value = str(totalCOM))
                     print(totalCOM)
                     inicial = aux[2] #modifica la variable "inicial"
                     if not aux[4]: #indica si no se pudo rellenar el atril
-                        sg.PopupNoButtons('No hay suficientes letras en la bolsa de la computadora para rellenar su atril',
+                        sg.PopupNoButtons('No hay suficientes letras en la bolsa de la computadora para rellenar su atril.',
                         auto_close = True, auto_close_duration = 5, no_titlebar = True)
                         window.Close()
                         GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2)
                         break
                 elif aux[1]: #indica si se apreto el cambiar letras
                     cant_COM += 1
+                    sg.PopupNoButtons('La computadora no pudo formar ninguna palabra y cambió las letras de su atril.', auto_close = True, auto_close_duration=3, no_titlebar = True)
                 else: #si no pudo colocar una palabra, ni cambiar las letras, finaliza el juego
-                    sg.PopupNoButtons('La computadora no pudo formar ninguna palabra', auto_close = True, auto_close_duration=3, no_titlebar = True)
+                    sg.PopupNoButtons('La computadora no pudo formar ninguna palabra y no tiene más letras en su bolsa.', auto_close = True, auto_close_duration=3, no_titlebar = True)
                     window.Close()
                     GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2)
                     break
@@ -959,6 +982,8 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
                         GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2)
                         break
                 desactivar() #hago invisibles los botones de cambio
+                sg.PopupNoButtons('Perdés el turno. Cambios restantes: '+str(3-(cant-1)),auto_close = True, auto_close_duration = 3, no_titlebar = True)
+                error = 0 #reinicio los errores por turno (ya que puedo cambiar las letras luego de haber colocado una o 2 palabras incorrectas)
                 turno = cambio_turno(turno)
 
 
@@ -994,6 +1019,8 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
                     cambioActivado = False #desactivo el cambio para que el atril vuelva a funcionar con normalidad
                     window.Element('CancelAlgunas').Update(visible = False)
                     window.Element('OK').Update(visible = False) #hago invisibles los botones para cambiar algunas letras
+                    sg.PopupNoButtons('Perdés el turno. Cambios restantes: '+str(3-(cant-1)),auto_close = True, auto_close_duration = 3, no_titlebar = True)
+                    error = 0 #reinicio los errores por turno (ya que puedo cambiar las letras luego de haber colocado una o 2 palabras incorrectas)
                     turno = cambio_turno(turno)
 
 
@@ -1063,9 +1090,9 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
                 word = ''.join(letra for letra in palabra) #junto las letras colocadas
                 print(word)
                 if nivel == 'nivel1' or nivel == 'nivel2':
-                    v_palabra = es_palabra(word, nivel, True) #booleano para entrar al if de mas abajo
+                    v_palabra = es_palabra(word, nivel, True) #(True de "clickeo")
                 else:
-                    v_palabra = es_palabra(word, nivel, clasificacion, True)
+                    v_palabra = es_palabra(word, nivel, True, False, clasificacion) #(True de "clickeo" y False de "com")
                 if v_palabra: #si es palabra
                     if inicial: #si la palabra que coloqué es la primera del juego
                         if '0707' in casillas_ocupadas: #si la casilla inicial está ocupada
@@ -1100,8 +1127,6 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
                         error = 0
                         turno = cambio_turno(turno)
                 else:
-                    print(word+' no es palabra') #
-                    sg.PopupNoButtons(word + ' no es palabra', auto_close=True, auto_close_duration=3, no_titlebar=True)
                     if '0707' in casillas_ocupadas: #si era la palabra inicial vuelvo a activar la variable que indica que se colocará la primer palabra del juego
                         inicial = True
                     devolver(fichas_desocupadas, casillas_ocupadas) #devuelve las letras al atril
@@ -1109,7 +1134,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
                     error += 1
                     if error == 3:
                         error = 0
-                        sg.PopupNoButtons('Ingresaste 3 palabras inválidas, perdes el turno', auto_close = True, auto_close_duration = 4, no_titlebar = True)
+                        sg.PopupNoButtons('Ingresaste 3 palabras inválidas, perdés el turno', auto_close = True, auto_close_duration = 4, no_titlebar = True)
                         turno = cambio_turno(turno)
                 palabra = [] #reinicio la lista
                 casillas_ocupadas = [] #idem

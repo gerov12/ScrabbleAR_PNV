@@ -39,13 +39,6 @@ def main():
             window2.Element("N3").Update(disabled = False)
         return lis
 
-    # try:
-    #     if not isfile("Imagenes/TituloScrabble1.png"): #si no existe la carpeta o la imagen levanto la excepción para advertir y que se cierre el programa
-    #         raise(FileNotFoundError)
-    # except(FileNotFoundError):
-    #     sg.Popup("La carpeta 'Imagenes' o la imagen solicitada no existen.", no_titlebar=True)
-    #     sys.exit()
-
     if not isfile("Imagenes/Titulo/TituloScrabble1.png"): #si no existe la carpeta o la imagen advierte con un Popup y cierra el programa
         sg.Popup("La carpeta 'Imagenes' o la imagen solicitada no existen.", no_titlebar=True)
         sys.exit()

@@ -47,4 +47,4 @@ def main (nivel = 'nivel1',clasificacion =999):
         sg.Popup('Error. No existe la carpeta "Imagenes" o la imagen solicitada.', no_titlebar=True)
 
 if __name__ =='__main__':
-    main(nivel = 'nivel1',clasificacion = 999)
+    main('nivel1',999)
