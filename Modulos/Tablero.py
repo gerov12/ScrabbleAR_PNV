@@ -1,18 +1,18 @@
-import PySimpleGUI as sg
 import sys
 import json
 import time
 import random
 import pattern.es
 import itertools as it
+import PySimpleGUI as sg
 from pattern.es import tag
 from Modulos import Reglas
 from Modulos import GameOver
 
-
 def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modificado = False, modificado2 = False):
     def cargar_diccionarios(dic_verbs, dic_lexicon, dic_spelling):
         '''Crea un nuevo diccionario para los 3 del modulo pattern.es pero quitandole las tildes a las palabras'''
+
         for pal in pattern.es.verbs.keys():
             aux = []
             aux.append(pal.lower()) #guardo la key
@@ -102,6 +102,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
     def cargar_casillas():
         '''Carga las keys de las casillas del tablero
         Si el archivo con las keys no existe se levanta una excepcion y se avisa al usuario mediante un Popup'''
+
         try:
             with open('Archivos/Casillas.json','r') as archivo_casillas:
                 cas = json.load(archivo_casillas)
@@ -113,6 +114,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
     def cargar_casillas_especiales(nivel):
         '''Carga las keys de las casillas especiales del tablero.
         Si el archivo con las keys no existe se levanta una excepcion y se avisa al usuario mediante un Popup'''
+
         try:
             with open ('Archivos/Especiales.json','r') as archivo_casillas: #falta escribir el archivo Especiales.json
                 casillas_esp=json.load(archivo_casillas)
@@ -124,6 +126,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
     def cargar_tablero(casillas_esp, nivel):
         '''Crea el layout del tablero, asignandole a cada boton que lo conforma la key
         y el color correspondiente'''
+
         board = []
         for y in range(14,-1,-1): #de 14 a 0 ya que las filas en el layout van en ese orden
             fila = []
@@ -147,6 +150,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
 
     def activar():
         '''Activa los botones para cambiar letras si el boton para hacerlo fue clickeado'''
+
         window.Element('CAMBIO').Update(disabled = True)
         window.Element('TODAS').Update(disabled = False)    #activo las opciones
         window.Element('ALGUNAS').Update(disabled = False)
@@ -156,6 +160,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
 
     def desactivar():
         '''Desactiva los botones para cambiar letras si el boton para hacerlo fue clickeado'''
+
         window.Element('CAMBIO').Update(disabled = False)
         window.Element('TODAS').Update(disabled = True)    #activo las opciones
         window.Element('ALGUNAS').Update(disabled = True)
@@ -163,9 +168,32 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
         for i in atril:
             window.Element(i).Update(disabled = False) #activo los clicks en el atril
 
+    def pausa_botones_desactivar():
+        '''Desactiva los botones y los clicks en el atril, si el boton pausa fue clickeado'''
+
+        window.Element('reglas').Update(disabled = True)
+        window.Element('guardar').Update(disabled = True)
+        window.Element('terminar').Update(disabled = True)
+        window.Element('CAMBIO').Update(disabled = True)
+        window.Element('confirmar palabra').Update(disabled = True)
+        for i in atril:
+            window.Element(i).Update(disabled = True) #desactivo los clicks en el atril
+
+    def pausa_botones_activar():
+        '''Vuelve a activar los botones y el atril una vez que se termino la pausa'''
+
+        window.Element('reglas').Update(disabled = False)
+        window.Element('guardar').Update(disabled = False)
+        window.Element('terminar').Update(disabled = False)
+        window.Element('CAMBIO').Update(disabled = False)
+        window.Element('confirmar palabra').Update(disabled = False)
+        for i in atril:
+            window.Element(i).Update(disabled = False) #activo los clicks en el atril
+
     def mezclar(datos, bolsa,clickeo=False):
         '''Cambia las letras en 'datos' por letras al azar de la bolsa ('datos' contiene las fichas del atril a cambiar).
         De no tener suficientes fichas en la bolsa no realiza modificaciónes y avisa al jugador con un Popup'''
+
         aux=False #aux indica si se cambiaron las letras
         if len(bolsa) >= len(datos): #si tengo 7 o mas elementos en la bolsa, entro
             for i in datos:
@@ -185,6 +213,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
     def colocar_letra(casilla, posA, let, pal, fichas_desocupadas, casillas_ocupadas):
         '''Coloca la letra en la casilla correspondiente y la quita del atril.
         Retorna la posicion del atril en la que fue colocada'''
+
         window.Element(casilla).Update(text=let) #pongo la letra "let" como texto de la "casilla" clickeada
         window.Element(casilla).Update(image_filename = 'Imagenes/Temas/'+tema.lower()+'/'+let+'_'+tema.lower()+'.png') #le coloco la imagen correspondiente al botón
         window.Element(posA).Update(text='') #la elimino del atril (reemplazandola por '')
@@ -197,6 +226,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
     def consecutivo(casilla,anterior): #
         '''Indica si la casilla seleccionada es consecutivo a la letra anteriormente colocada.
         Retorna una lista con un booleano y la orientacón de la palabra'''
+
         aux = False
         orient = ''
         izquierda = str((int(casilla[0:2])-1))+casilla[2:4] #(el primer digito-1)+el segundo digito (es decir la casilla de la izquierda)
@@ -210,7 +240,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
                     orient = 'Horizontal' #y comencé a armar la palabra de manera horizontal
                     return [aux, orient]
         if int(arriba[2:4])<15: #si no elegí una casilla correcta para la orientacion horizontal chequeo si es vertical
-        #si el sgundo digito de la casilla de arriba es menor a 4 (es decir que no elegí una casilla de la fila 3)
+        #si el segundo digito de la casilla de arriba es menor a 4 (es decir que no elegí una casilla de la fila 3)
         #(el 4 mas adelante debería cambiarse por la altura del tablero)
             if len(arriba)<4: #si el valor de y queda de n digito
                 arriba = arriba[0:2]+'0'+arriba[2] #le agrego un 0 adelante
@@ -223,6 +253,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
 
     def orientada(casilla, orient,anterior):
         '''Retorna un booleano que indica si la casilla seleccionada cumple con la orientacion definida'''
+
         aux = False
         if orient == 'Horizontal': #si la orientacion es horizontal hago el chequeo correspondiente
             izquierda = str((int(casilla[0:2])-1))+casilla[2:4]
@@ -244,16 +275,18 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
 
     def seleccion_random ():
         '''Multiples usos: turno, tipo de palabra en el nivel 3, orientacion de las palabras de la computadora'''
+
         return(random.randint(0,1))
 
     def cambio_turno(turno):
         '''Cambia el turno'''
+
         if turno == 1: #1 es jugador
             return 0
         else: #0 es la compu
             return 1
 
-    def es_palabra(pal, nivel,clasificacion=999):
+    def es_palabra(pal, nivel,clasificacion = 999, clickeo = False):
         '''Determina si el conjunto de letras ingresado es una palabra.
         En el caso del nivel 2 y 3 también verifica si pertenece al tipo de palabra correspondiente al nivel que se esta jugando.'''
 
@@ -279,18 +312,23 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
                     if tipo == 'VB' or tipo == 'JJ':
                         return True
                     else:
-                        sg.PopupNoButtons('Tipo de palabra no valido para este nivel',auto_close=True,auto_close_duration=4,no_titlebar=True)
+                        if clickeo:
+                            sg.PopupNoButtons('Tipo de palabra no valido para este nivel',auto_close=True,auto_close_duration=4,no_titlebar=True)
                         return False
                 elif nivel =='nivel3':
                     if tipo == clasificacion:
                         return True
                     else:
-                        sg.PopupNoButtons('Tipo de palabra no valido para este nivel',auto_close=True,auto_close_duration=4,no_titlebar=True)
+                        if clickeo:
+                            sg.PopupNoButtons('Tipo de palabra no valido para este nivel',auto_close=True,auto_close_duration=4,no_titlebar=True)
                         return False
         else:
             return False
 
     def turno_COM (atrilCOM ,nivel, bolsaCOM, cant_COM, inicial, tema, puntajes, casillas_esp, puntCOM, clasificacion = 999):
+        '''Funcionamiento de la computadora: arma las palabras, verifica si son validas y si corresponden a la clasificacion
+        dependiendo del nivel, con un random decide la orientacion de la palabra, la coloca en el atril, rellena el atril con
+        nuevas letras (sino es posible armar una palabra cambia todas las letras del atril) y suma los puntos correspondientes'''
 
         colocada = False
 
@@ -557,6 +595,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
 
     def devolver(fichas_desocupadas, casillas_ocupadas):
         '''Devuelve las letras al atril en caso de que una palabra sea incorrecta'''
+
         for i in range(len(fichas_desocupadas)):
             pos = random.randrange(len(casillas_ocupadas)) #elijo una casilla ocupada al azar
             letter = window.FindElement(casillas_ocupadas[pos]).GetText() #guardo la letra de la pos
@@ -634,6 +673,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
     def guardar_datos (nivel,datos):
         '''Si el archivo NO existe lo crea, serializa la informacion ingresada en 'datos' y lo carga en el archivo JSON.
         Si el archivo existe, lo abre, actualiza la información y la carga en el archivo JSON'''
+
         with open('Archivos/top10_'+nivel+'.json','w') as archivo: #(si no existe lo creo al archivo) lo abro en modo escritura
             json.dump(datos,archivo) #serializo la info
 
@@ -643,7 +683,8 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
         esta es manejada por el bloque try-except el cuál crea el archivo cargando la informacion del jugador actual.
         ->Si el archivo top 10 del nivel correspondiente existe, carga el nuevo puntaje a la estructura de datos
         la ordena y determina si tiene longitud mayor a 10. Si esta estructura de datos tiene longitud mayor a 10
-        se elimina el ultimo puntaje'''
+        se elimina el ultimo puntaje.
+        Aclaracion: se permiten los puntajes repetidos'''
 
         if nombre != "Jugador":
             n = nombre
@@ -653,7 +694,6 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
         nuevo={"nombre": n, "puntaje":puntaje, "fecha":time.strftime("%d %b %Y %H:%M"), "nivel":nivel} #creo un dic para cargar la info nueva
         try:
             datos = extraer_datos_top10(nivel) #si existe, voy a asignarle su contenido a la variable datos
-            #if not puntaje in datos["puntaje"]:
             datos.append(nuevo) #cargo el nuevo puntaje
             datos=sorted(datos,key=lambda jugador: jugador['puntaje'],reverse=True) #lo ordeno, para ver si el nuevo puntaje supera a algunos de los puntajes del archivo
             if len(datos) > 10: #si tengo 11 elementos entro
@@ -663,6 +703,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
             datos.append(nuevo)#agrego el primer puntaje
         finally:
             guardar_datos(nivel,datos) #llamo a la funcion que serializa la info para subir la info al archivo
+
 
 ####################################################################################################################################################################################################
 
@@ -727,6 +768,7 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
     frameTurno = [
         [sg.Text('', size=(21,1), font=('', 10), justification='center', background_color = 'grey', key='turno')]
     ] #Interfaz del turno
+
     #elementos de la derecha de la ventana
     colExtras = [
             [sg.Text('                    '),sg.Frame('Turno', frameTurno, title_color='black',background_color='white')],
@@ -741,14 +783,14 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
             [sg.Text('')],
             [sg.Text('')],
             [sg.Text('')],
-            [sg.Button('Confirmar Palabra', size=(52,1), button_color = ('black','white'))],
+            [sg.Button('Confirmar Palabra', size=(52,1), key='confirmar palabra', button_color = ('black','white'))],
             [sg.Button('Cambiar Letras', disabled = False, button_color = ('black','white'), key = 'CAMBIO',size=(9,1)),
             sg.Button('Todas', disabled = True, button_color = ('black','white'), key = 'TODAS', size=(9,1)),
             sg.Button('Algunas', disabled = True, button_color = ('black','white'), key = 'ALGUNAS', size=(9,1)),
             sg.Button('Cancelar', disabled = True, button_color = ('black','white'), key = 'CANCEL', size=(9,1))],
             [sg.Frame('PUNTAJE '+nombre.upper(), puntJUG, title_color='white',background_color='black', key= 'LJ')], #puntaje del jugador
             [sg.Frame('',frameAtrilJUG,border_width=8)], #atril del jugador
-            [sg.Button('Cambiar', button_color = ('black','white'), visible = False, key = 'OK'), sg.Button('Cancelar', button_color = ('black','white'), visible = False, key = 'CancelAlgunas')]
+            [sg.Button('Cancelar', button_color = ('black','white'), visible = False, key = 'CancelAlgunas'),sg.Button('Cambiar', button_color = ('black','white'), visible = False, key = 'OK')]
     ]
 
     #marco con el tablero
@@ -801,9 +843,10 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
     paused = False
     start_time = int(round(time.time() * 100))
     while True:
-        event, values = window.Read(timeout=5)  #Ni idea que hace el timeout
+        event, values = window.Read(timeout=5)
         if event is None:
             break
+
         if actual_time >= (int(tiempo)*60)*100:       #CENTESIMAS
             sg.PopupNoButtons('Terminó el Tiempo', auto_close = True, auto_close_duration = 3, no_titlebar = True)
             calcular_top10(nivel,totalJUG)
@@ -818,9 +861,11 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
             event,values = window.Read()
 
         if turno == 0: #0 turno de PC
+            pausa_botones_desactivar()
+            window.Element('pausa').Update(disabled = True)
             window.Element('time').Update(value = '--:--')
             window.Element('turno').Update(value = 'Computadora')
-            sg.PopupNoButtons('La compu está pensando', auto_close = True, auto_close_duration = 3, no_titlebar = True)
+            sg.PopupNoButtons('La compu está pensando', auto_close = True, auto_close_duration = 1, no_titlebar = True)
             if nivel == "nivel3":
                 aux = turno_COM(atrilCOM ,nivel, bolsaCOM, cant_COM, inicial, tema, puntajes, casillasESP, totalCOM, clasificacion)
                 if aux[0]: #indica si se coloco una palabra
@@ -834,6 +879,9 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
                         window.Close()
                         GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2)
                         break
+                elif not aux[0]:
+                        sg.PopupNoButtons('La computadora no pudo formar ninguna palabra, pierde el turno',
+                        auto_close = True, auto_close_duration = 4, no_titlebar = True)
                 elif aux[1]: #indica si se apreto el cambiar letras
                     cant_COM += 1
                 else: #si no pudo colocar una palabra, ni cambiar las letras, finaliza el juego
@@ -863,9 +911,12 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
                     GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2)
                     break
             turno = cambio_turno(turno)
-        else:
+        else: #1 turno del jugador
+            pausa_botones_activar()
+            window.Element('pausa').Update(disabled = False)
             window.Element('turno').Update(value = nombre)
             if event == 'reglas':
+                pausa_botones_desactivar()
                 paused = True #Pongo en pausa el tiempo
                 paused_time = int(round(time.time() * 100)) #Guardo donde quedo el tiempo
                 if nivel == 'nivel1' or nivel == 'nivel2':
@@ -873,18 +924,23 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
                 else:
                     Reglas.main(nivel,clasificacion)
                 if Reglas.reanudar_reloj():
+                    pausa_botones_activar()
                     paused = False #Pongo play
                     start_time = start_time + int(round(time.time() * 100)) - paused_time #Retomo desde donde quedé
+
 
             elif event == 'pausa':
                 if window.Element('pausa').GetText() == 'Pausa':
                     paused = True
+                    pausa_botones_desactivar()
                     paused_time = int(round(time.time() * 100))
                     window.Element('pausa').Update(text='Continuar')
                 else:
                     paused = False
+                    pausa_botones_activar()
                     start_time = start_time + int(round(time.time() * 100)) - paused_time
                     window.Element('pausa').Update(text='Pausa')
+
 
             elif event == 'CAMBIO' and len(palabra) == 0: #solo puedo cambiar letras si no coloqué ninguna en el tablero
                 if cant <=3:
@@ -1002,14 +1058,14 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
                             letra = '' #idem pero con la letra
 
 
-            elif event == 'Confirmar Palabra':
+            elif event == 'confirmar palabra':
                 orientacion = ''
                 word = ''.join(letra for letra in palabra) #junto las letras colocadas
                 print(word)
                 if nivel == 'nivel1' or nivel == 'nivel2':
-                    v_palabra = es_palabra(word, nivel) #booleano para entrar al if de mas abajo
+                    v_palabra = es_palabra(word, nivel, True) #booleano para entrar al if de mas abajo
                 else:
-                    v_palabra = es_palabra(word, nivel,clasificacion)
+                    v_palabra = es_palabra(word, nivel, clasificacion, True)
                 if v_palabra: #si es palabra
                     if inicial: #si la palabra que coloqué es la primera del juego
                         if '0707' in casillas_ocupadas: #si la casilla inicial está ocupada
@@ -1058,11 +1114,14 @@ def main(nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modi
                 palabra = [] #reinicio la lista
                 casillas_ocupadas = [] #idem
 
+
             elif event == 'terminar':
-                calcular_top10(nivel,totalJUG)
-                window.Close()
-                GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2)
-                break
+                res = sg.PopupYesNo('¿Desea terminar la partida?', no_titlebar = True)
+                if res == 'Yes':
+                    calcular_top10(nivel,totalJUG)
+                    window.Close()
+                    GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2)
+                    break
 
 
         window.FindElement('time').Update('{:02d}:{:02d}'.format((actual_time // 100) // 60,(actual_time // 100) % 60))

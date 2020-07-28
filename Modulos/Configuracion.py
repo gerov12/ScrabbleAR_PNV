@@ -1,11 +1,12 @@
-import PySimpleGUI as sg
-import ScrabbleAR
-from Modulos import Tablero
 import json
+import ScrabbleAR
+import PySimpleGUI as sg
+from Modulos import Tablero
 
 def main():
     def definir_parametros(values):
         '''Asigna los valores que el jugador selecciono a los parametros que se enviaran al tablero'''
+
         if values['nom'] != '':
             jug = values['nom']
         else:
@@ -54,15 +55,21 @@ def main():
         if event is None:
             window.Close()
             break
+
+
         elif event == 'Confirmar':
             parametros = definir_parametros(values)
             window.Close()
             Tablero.main(*parametros, ok, ok2)
             break
+
+
         elif event == 'Volver al menu':
             window.Close()
             ScrabbleAR.main()
             break
+
+
         elif event == 'Modificar letras': #Guardo las cantidades de las letras en un diccionario nuevo
 
             modificar =[
@@ -81,9 +88,13 @@ def main():
                 if event2 == None or event2 == 'Cancelar':
                     window2.Close()
                     break
+
+
                 elif event2 == 'Confirmar':
                     window2.Close()
                     break
+
+
                 elif event2 == 'Modificar La Cantidad De Letras':
                     letras = [
                         [sg.Text('A'), sg.Spin([i for i in range(1,12)], initial_value=1, key='A'),
@@ -123,6 +134,8 @@ def main():
                         event3, values3 = window3.Read()
                         if event3 == None or event3 == 'Cancelar':
                             break
+
+
                         elif event3 == 'confirmar':
                             dic = {}
                             for key,valor in values3.items():  #Transformo los valores en integer
@@ -135,7 +148,10 @@ def main():
                                 sg.Popup('Error. No existe la carpeta "Archivos".', no_titlebar=True)
                             finally:
                                 break
+
                     window3.Close()
+
+
 
                 elif event2 == 'Modificar El Puntaje De Las Letras':
                     letras2 = [
@@ -176,6 +192,8 @@ def main():
                         event4, values4 = window4.Read()
                         if event4 == None or event4 == 'Cancelar':
                             break
+
+
                         elif event4 == 'confirmar':
                             dic = {}
                             for key,valor in values4.items():  #Transformo los valores en integer
@@ -188,6 +206,7 @@ def main():
                                 sg.Popup('Error. No existe la carpeta "Archivos".', no_titlebar=True)
                             finally:
                                 break
+
                     window4.Close()
         #los break son para que corte el while y no dé error
 

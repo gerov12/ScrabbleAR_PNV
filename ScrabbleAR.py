@@ -1,15 +1,16 @@
+import sys
+import json
 import PySimpleGUI as sg
+from os.path import isfile
 from Modulos import Tablero
 from Modulos import Configuracion
-import json
-from os.path import isfile
-import sys
 
 def main():
     sg.ChangeLookAndFeel('DarkAmber')
 
     def actualizar(listbox,lis):
         '''Actualiza el contenido de la listbox con lo que contenga la variable "lis"'''
+
         aux = []
         for elem in lis:
             texto = ""
@@ -66,21 +67,31 @@ def main():
         if event is None or event == 'Salir':
             window.Close()
             break
+
+
         elif event == 'Partida Rápida':
             window.Close()
             Tablero.main('Jugador', 'claro','nivel1',3)
             break
+
+
         # elif event == 'Cargar Partida':
         #     ...
         #     break
+
+
         elif event == 'Partida Personalizada':
             window.Close()
             Configuracion.main()
             break
+
+
         elif event == 'Top 10 Puntajes':
-            top10 = [[sg.Button('Nivel 1', key="N1"),sg.Button('Nivel 2', key="N2"),sg.Button('Nivel 3', key="N3")],
-                      [sg.Listbox(values = [],key='t10', size=(65,10), font = ("",15))],
-                      [sg.Button('Atras')]]
+            top10 = [
+                [sg.Button('Nivel 1', key="N1"),sg.Button('Nivel 2', key="N2"),sg.Button('Nivel 3', key="N3")],
+                [sg.Listbox(values = [],key='t10', size=(65,10), font = ("",15))],
+                [sg.Button('Atras')]
+                ]
 
             window2 = sg.Window('TOP 10').Layout(top10).Finalize()
 
@@ -89,16 +100,23 @@ def main():
                 if event2 == 'Atras' or event2 == None:
                     window2.Close()
                     break
+
+
                 elif event2 == 'N1':
                     actualizar(window2.Element('t10'), retornar_datos('top10_nivel1.json'))
                     #break
+
+
                 elif event2 == 'N2':
                     actualizar(window2.FindElement('t10'), retornar_datos('top10_nivel2.json'))
                     #break
+
                 else:
                     actualizar(window2.FindElement('t10'), retornar_datos('top10_nivel3.json'))
                     #break
+
             window2.Close()
+
     window.Close()
 
         #los break son para que corte el while y no dé error
