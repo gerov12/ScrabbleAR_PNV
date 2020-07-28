@@ -1,12 +1,21 @@
+import json
 import ScrabbleAR
 import PySimpleGUI as sg
 from Modulos import Tablero
 
-def main (puntos_jugador,puntos_computadora,nombre, tema, nivel, tiempo, modificado, modificado2):
+def main (puntos_jugador,puntos_computadora,nombre, tema, nivel, tiempo, modificado, modificado2, cargado):
     '''Define quien gano o si hubo un empate y lo muestra con la imagen correspondiente
     Si la imagen o la carpeta que las contiene no existe levanta una excepcion y lo informa con un Popup'''
 
     sg.ChangeLookAndFeel('DarkAmber')
+    try:
+        if cargado: #si terminé una partida pospuesta, esta se elimina
+            aux = {}
+            with open ("Archivos/Partida.json", "w") as archivo:
+                json.dump(aux, archivo)
+    except (FileNotFoundError):
+        sg.Popup('ERROR. El archivo JSON solicitado o su carpeta contenedora no existen.',no_titlebar=True)
+        sys.exit()
 
     try:
         print('###############################')#
@@ -53,7 +62,7 @@ def main (puntos_jugador,puntos_computadora,nombre, tema, nivel, tiempo, modific
 
             elif event == 'Volver a Jugar':
                 window.Close()
-                Tablero.main(nombre, tema, nivel, tiempo, modificado, modificado2)
+                Tablero.main(False, nombre, tema, nivel, tiempo, modificado, modificado2)
                 break
 
         window.Close()

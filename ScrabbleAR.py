@@ -64,14 +64,22 @@ def main():
 
         elif event == 'Partida Rápida':
             window.Close()
-            Tablero.main('Jugador', 'claro','nivel1',3)
+            Tablero.main(False, 'Jugador', 'claro', 'nivel1', 3)
             break
 
 
-        # elif event == 'Cargar Partida':
-        #     ...
-        #     break
-
+        elif event == 'Cargar Partida':
+            try:
+                with open ("Archivos/Partida.json", "r") as archivo:
+                    aux = json.load(archivo)
+                if aux != {}:
+                    Tablero.main(True)
+                else:
+                    sg.PopupNoButtons("No hay ninguna partida guardada.", auto_close = True, auto_close_duration = 4, no_titlebar = True)
+                break
+            except (FileNotFoundError):
+                sg.Popup('ERROR. El archivo JSON solicitado o su carpeta contenedora no existen.',no_titlebar=True)
+                sys.exit()
 
         elif event == 'Partida Personalizada':
             window.Close()

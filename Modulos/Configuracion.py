@@ -24,7 +24,7 @@ def main():
         else:
             level = 'nivel3'
         tiempo = values['tiempo']
-        return [jug,tema,level,tiempo]
+        return [False, jug, tema ,level, tiempo]
 
     sg.ChangeLookAndFeel('DarkAmber')
 
