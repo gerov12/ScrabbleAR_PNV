@@ -358,7 +358,7 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                         return False
             elif not com:
                 print(pal+' no es palabra') #
-                sg.PopupNoButtons(pal + ' no es palabra', auto_close=True, auto_close_duration=3, no_titlebar=True, non_blocking = True)
+                sg.PopupNoButtons(pal + ' no es palabra', auto_close=True, auto_close_duration=3, no_titlebar=True)
                 return False
         elif not com:
             print(pal+' no es palabra') #
@@ -1015,9 +1015,9 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                         break
                 elif aux[1]: #indica si se apreto el cambiar letras
                     cant_COM += 1
-                    sg.PopupNoButtons('La computadora no pudo formar ninguna palabra y cambió las letras de su atril.', auto_close = True, auto_close_duration=3, no_titlebar = True, non_blocking = True)
+                    sg.PopupNoButtons('La computadora no pudo formar ninguna palabra y cambió las letras de su atril.', auto_close = True, auto_close_duration=3, no_titlebar = True)
                 else: #si no pudo colocar una palabra, ni cambiar las letras, finaliza el juego
-                    sg.PopupNoButtons('La computadora no pudo formar ninguna palabra y no tiene más letras en su bolsa.', auto_close = True, auto_close_duration=3, no_titlebar = True, non_blocking = True)
+                    sg.PopupNoButtons('La computadora no pudo formar ninguna palabra y no tiene más letras en su bolsa.', auto_close = True, auto_close_duration=3, no_titlebar = True)
                     window.Close()
                     GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2, cargado)
                     break
@@ -1032,15 +1032,15 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                     inicial = aux[2] #modifica la variable "inicial"
                     if not aux[4]: #indica si no se pudo rellenar el atril
                         sg.PopupNoButtons('No hay suficientes letras en la bolsa de la computadora para rellenar su atril.',
-                        auto_close = True, auto_close_duration = 5, no_titlebar = True, non_blocking = True)
+                        auto_close = True, auto_close_duration = 5, no_titlebar = True)
                         window.Close()
                         GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2, cargado)
                         break
                 elif aux[1]: #indica si se apreto el cambiar letras
                     cant_COM += 1
-                    sg.PopupNoButtons('La computadora no pudo formar ninguna palabra y cambió las letras de su atril.', auto_close = True, auto_close_duration=3, no_titlebar = True, non_blocking = True)
+                    sg.PopupNoButtons('La computadora no pudo formar ninguna palabra y cambió las letras de su atril.', auto_close = True, auto_close_duration=3, no_titlebar = True)
                 else: #si no pudo colocar una palabra, ni cambiar las letras, finaliza el juego
-                    sg.PopupNoButtons('La computadora no pudo formar ninguna palabra y no tiene más letras en su bolsa.', auto_close = True, auto_close_duration=3, no_titlebar = True, non_blocking = True)
+                    sg.PopupNoButtons('La computadora no pudo formar ninguna palabra y no tiene más letras en su bolsa.', auto_close = True, auto_close_duration=3, no_titlebar = True)
                     window.Close()
                     GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2, cargado)
                     break
@@ -1090,13 +1090,13 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                     cant += 1 #incremento la variable que cuenta las veces que se apretó "Cambiar letras"
                 else:
                     if len(bolsa) == 0:
-                        sg.PopupNoButtons('No hay letras en la bolsa',auto_close = True, auto_close_duration = 3, no_titlebar = True, non_blocking = True)
+                        sg.PopupNoButtons('No hay letras en la bolsa',auto_close = True, auto_close_duration = 3, no_titlebar = True)
                         window.Close()
                         GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2, cargado)
                         break
                 cambioActivadoTurno = False
                 desactivar() #hago invisibles los botones de cambio
-                sg.PopupNoButtons('Perdés el turno. Cambios restantes: '+str(3-(cant-1)),auto_close = True, auto_close_duration = 3, no_titlebar = True, non_blocking = True)
+                sg.PopupNoButtons('Perdés el turno. Cambios restantes: '+str(3-(cant-1)),auto_close = True, auto_close_duration = 3, no_titlebar = True)
                 error = 0 #reinicio los errores por turno (ya que puedo cambiar las letras luego de haber colocado una o 2 palabras incorrectas)
                 turno = cambio_turno(turno)
 
@@ -1125,7 +1125,7 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                                 l = window.Element(i).GetText() #guardo la letra
                                 window.Element(i).Update(image_filename = 'Imagenes/Temas/'+tema.lower()+'/'+l+'_'+tema.lower()+'.png') #le coloco la imagen original
                             if len(bolsa) == 0:
-                                sg.PopupNoButtons('No hay letras en la bolsa',auto_close = True, auto_close_duration = 3, no_titlebar = True, non_blocking = True)
+                                sg.PopupNoButtons('No hay letras en la bolsa',auto_close = True, auto_close_duration = 3, no_titlebar = True)
                                 window.Close()
                                 GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2, cargado)
                                 break
@@ -1138,7 +1138,7 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                     cambioActivado = False #desactivo el cambio para que el atril vuelva a funcionar con normalidad
                     window.Element('CancelAlgunas').Update(visible = False)
                     window.Element('OK').Update(visible = False) #hago invisibles los botones para cambiar algunas letras
-                    sg.PopupNoButtons('Perdés el turno. Cambios restantes: '+str(3-(cant-1)),auto_close = True, auto_close_duration = 3, no_titlebar = True, non_blocking = True)
+                    sg.PopupNoButtons('Perdés el turno. Cambios restantes: '+str(3-(cant-1)),auto_close = True, auto_close_duration = 3, no_titlebar = True)
                     error = 0 #reinicio los errores por turno (ya que puedo cambiar las letras luego de haber colocado una o 2 palabras incorrectas)
                     turno = cambio_turno(turno)
 
@@ -1247,7 +1247,7 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                             fichas_desocupadas = [] #reinicio la lista de fichas desocupadas
                         else:
                             sg.PopupNoButtons('No hay suficientes letras en la bolsa del jugador para rellenar su atril',
-                            auto_close = True, auto_close_duration = 5, no_titlebar = True, non_blocking = True)
+                            auto_close = True, auto_close_duration = 5, no_titlebar = True)
                             window.Close()
                             GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2, cargado)
                             break
@@ -1261,7 +1261,7 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                     error += 1
                     if error == 3:
                         error = 0
-                        sg.PopupNoButtons('Ingresaste 3 palabras inválidas, perdés el turno', auto_close = True, auto_close_duration = 4, no_titlebar = True, non_blocking = True)
+                        sg.PopupNoButtons('Ingresaste 3 palabras inválidas, perdés el turno', auto_close = True, auto_close_duration = 4, no_titlebar = True)
                         turno = cambio_turno(turno)
                 palabra = [] #reinicio la lista
                 casillas_ocupadas = [] #idem
