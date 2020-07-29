@@ -824,6 +824,7 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
         actual_time = dic_datos["actual_time"]
         tiempo = dic_datos["tiempo"]
         nivel = dic_datos["nivel"]
+        nombre = dic_datos["nombre"]
         tema = dic_datos["tema"]
         bolsaCOM = dic_datos["bolsaCOM"]
         bolsa = dic_datos["bolsa"]
