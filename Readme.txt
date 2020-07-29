@@ -1,5 +1,3 @@
-![logo](https://user-images.githubusercontent.com/62022313/88839270-36618a00-d1b1-11ea-989a-25c58a337e85.png)
-
 Juego creado por Ayelen Naccarato, Anabel Paez La Valle y Geronimo Vega para el Seminario de Python.
 Repositorio de Github: github.com/gerov12/ScrabbleAR_PNV
 
