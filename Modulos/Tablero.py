@@ -1313,6 +1313,18 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                         guardar_partida(casillas, atril, atrilCOM, totalCOM, totalJUG, actual_time, tiempo, nivel, nombre, tema, bolsaCOM, bolsa, turno, cant_COM, cant, inicial, error,
                         dic_verbs, dic_lexicon, dic_spelling, puntajes)
                     window.Close()
+
+                    guardar_p = [
+                                [sg.Image(filename = "Imagenes/Fin/Posponer.png", size=(430,430))], [sg.Text('                                               '),sg.Button('Salir', button_color=('black','red'))]
+                                ]
+                    window_p = sg.Window('Guardar Partida',no_titlebar=True).Layout(guardar_p).Finalize()
+                    while True:
+                        event2, values2 = window_p.Read()
+                        if event2 == 'Salir':
+                            break
+
+                    window_p.Close()
+
                     break
 
 
