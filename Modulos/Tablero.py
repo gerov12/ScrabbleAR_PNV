@@ -75,6 +75,7 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
             except (FileNotFoundError):
                 sg.Popup('ERROR. El archivo JSON solicitado o su carpeta contenedora no existen.',no_titlebar=True)
                 sys.exit()
+
         return bolsa
 
     def cargar_puntajes():
@@ -167,6 +168,7 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                 let = window.Element(aux).GetText() #guardo la letra que acabo de colocar en el atril
                 window.Element(aux).Update(image_filename = 'Imagenes/Temas/'+tema.lower()+'/'+let+'_'+tema.lower()+'.png') #le coloco la imagen correspondiente al botón
                 del bolsa[indice]
+
         except (FileNotFoundError):
             sg.Popup('Error. No existe la carpeta "Imagenes" o la imagen solicitada.', no_titlebar=True)
             sys.exit()
@@ -440,6 +442,7 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                         colocada = True
                         inicial = False
 
+                        windowCOM.Close()
                         puntos = sumar_puntos(puntajes, casillas_esp, pal_validas[0], ocupadas, puntCOM) #hay que retornar los puntos
 
                         del pal_validas
@@ -475,6 +478,7 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                         colocada = True
                         inicial = False
 
+                        windowCOM.Close()
                         puntos = sumar_puntos(puntajes, casillas_esp, pal_validas[0], ocupadas, puntCOM) #hay que retornar los puntos
 
                         del pal_validas
@@ -546,6 +550,7 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
 
                                             colocada = True
 
+                                            windowCOM.Close()
                                             puntos = sumar_puntos(puntajes, casillas_esp, pal_validas[0], ocupadas, puntCOM) #hay que retornar los puntos
 
                                             del pal_validas
@@ -615,6 +620,7 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
 
                                             colocada = True
 
+                                            windowCOM.Close()
                                             puntos = sumar_puntos(puntajes, casillas_esp, pal_validas[0], ocupadas, puntCOM) #hay que retornar los puntos
 
                                             del pal_validas
@@ -634,13 +640,13 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                 sg.Popup('Error. No existe la carpeta "Imagenes" o la imagen solicitada.', no_titlebar=True)
                 sys.Exit()
 
-                if cant_COM <= 3: #si no pudo poner la palabra en vertical ni en horizontal intenta cambiar letras
-                    cambio = mezclar(atrilCOM, bolsaCOM)
-                    return [colocada, cambio, inicial, puntCOM] #retorna si colocó la palabra, si cambio las letras y la variable "inicial"
-                else:
-                    window.Close()
-                    GameOver.main(totalJUG, puntCOM, nombre, tema, nivel, tiempo, modificado, modificado2, cargado)
-                    sys.exit()
+        if cant_COM <= 3: #si no pudo poner la palabra en vertical ni en horizontal intenta cambiar letras
+            cambio = mezclar(atrilCOM, bolsaCOM)
+            return [colocada, cambio, inicial, puntCOM] #retorna si colocó la palabra, si cambio las letras y la variable "inicial"
+        else:
+            window.Close()
+            GameOver.main(totalJUG, puntCOM, nombre, tema, nivel, tiempo, modificado, modificado2, cargado)
+            sys.exit()
 
     def devolver(fichas_desocupadas, casillas_ocupadas):
         '''Devuelve las letras al atril en caso de que una palabra sea incorrecta.
@@ -714,6 +720,7 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
             total-=restar
         print('suma final: '+str(total)) #
         actual += total #al puntaje actual le agrego el obtenido con la nueva palabra
+        sg.PopupNoButtons("+"+str(total)+" Puntos!", auto_close = True, auto_close_duration = 2, no_titlebar = True)
         return actual
 
     def extraer_datos_top10(nivel):
@@ -760,6 +767,8 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
 
     def guardar_partida (casillas, atril, atrilCOM, totalCOM, totalJUG, actual_time, tiempo, nivel, nombre, tema, bolsaCOM, bolsa, turno, cant_COM, cant, inicial, error,
     dic_verbs, dic_lexicon, dic_spelling, puntajes, clasificacion = 999):
+        '''Guarda en un archivo json los datos necesarios para posponer correctamente la partida
+        Si la carpeta Archivos no existe levanta una excepcion y lo informa con un Popup'''
 
         ocupadas = {}
         for key in casillas:
@@ -781,13 +790,25 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
             dic_datos = {"tablero": ocupadas, "atril": atrilJUG, "atrilCOM": atrilCOMPU, "totalCOM": totalCOM, "totalJUG": totalJUG, "actual_time": actual_time,
             "tiempo": tiempo, "nivel": nivel, "nombre": nombre, "tema": tema, "bolsaCOM":bolsaCOM, "bolsa": bolsa, "turno": turno, "cant_COM": cant_COM, "cant": cant, "inicial": inicial,
             "error": error, "dic_verbs": dic_verbs, "dic_lexicon": dic_lexicon, "dic_spelling": dic_spelling, "puntajes": puntajes}
-        with open ("Archivos/Partida.json", 'w') as archivo:
-            json.dump(dic_datos, archivo)
+
+        try:
+            with open ("Archivos/Partida.json", 'w') as archivo:
+                json.dump(dic_datos, archivo)
+        except (FileNotFoundError):
+            sg.Popup('ERROR. El archivo JSON solicitado o su carpeta contenedora no existen.',no_titlebar=True)
+            sys.exit()
 
     def cargar_partida ():
-        with open ("Archivos/Partida.json", 'r') as archivo:
-            dic_datos = json.load(archivo)
-        return dic_datos
+        '''recupera los datos de la partida guardada y los retorna
+        Si la carpeta Archivos no existe levanta una excepcion y lo informa con un Popup'''
+
+        try:
+            with open ("Archivos/Partida.json", 'r') as archivo:
+                dic_datos = json.load(archivo)
+            return dic_datos
+        except (FileNotFoundError):
+            sg.Popup('ERROR. El archivo JSON solicitado o su carpeta contenedora no existen.',no_titlebar=True)
+            sys.exit()
 
 
 ####################################################################################################################################################################################################
@@ -824,7 +845,7 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
         dic_spelling = {} #diccionario de pattern modificado (sin tildes)
         cargar_diccionarios(dic_verbs, dic_lexicon, dic_spelling) #modifico las palabras (les quito las tildes)
         bolsa = llenar_bolsa(nivel) #lleno la bolsa del jugador
-        bolsaCOM = bolsa #lleno la bolsa de la computadora
+        bolsaCOM = llenar_bolsa(nivel) #lleno la bolsa de la computadora
         puntajes = cargar_puntajes() #cargo los puntajes de las fichas
         if (nivel == 'nivel3'): #se selecciona el tipo de palabra a utilizar
             aux = seleccion_random()
@@ -1001,7 +1022,6 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
 
             if nivel == "nivel3":
                 aux = turno_COM(atrilCOM ,nivel, bolsaCOM, cant_COM, inicial, tema, puntajes, casillasESP, totalCOM, clasificacion)
-                windowCOM.Close()
                 if aux[0]: #indica si se coloco una palabra
                     totalCOM = aux[3] #contiene los puntos totales de la computadora
                     window.Element("PC").Update(value = str(totalCOM))
@@ -1010,21 +1030,24 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                     if not aux[4]: #indica si no se pudo rellenar el atril
                         sg.PopupNoButtons('No hay suficientes letras en la bolsa de la computadora para rellenar su atril.',
                         auto_close = True, auto_close_duration = 5, no_titlebar = True)
+                        calcular_top10(nivel,totalJUG)
                         window.Close()
                         GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2, cargado)
                         break
                 elif aux[1]: #indica si se apreto el cambiar letras
+                    windowCOM.Close()
                     cant_COM += 1
                     sg.PopupNoButtons('La computadora no pudo formar ninguna palabra y cambió las letras de su atril.', auto_close = True, auto_close_duration=3, no_titlebar = True)
                 else: #si no pudo colocar una palabra, ni cambiar las letras, finaliza el juego
+                    windowCOM.Close()
                     sg.PopupNoButtons('La computadora no pudo formar ninguna palabra y no tiene más letras en su bolsa.', auto_close = True, auto_close_duration=3, no_titlebar = True)
+                    calcular_top10(nivel,totalJUG)
                     window.Close()
                     GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2, cargado)
                     break
 
             else:
                 aux = turno_COM(atrilCOM ,nivel, bolsaCOM, cant_COM, inicial, tema, puntajes, casillasESP, totalCOM)
-                windowCOM.Close()
                 if aux[0]: #indica si se coloco una palabra
                     totalCOM = aux[3] #contiene los puntos totales de la computadora
                     window.Element("PC").Update(value = str(totalCOM))
@@ -1033,14 +1056,18 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                     if not aux[4]: #indica si no se pudo rellenar el atril
                         sg.PopupNoButtons('No hay suficientes letras en la bolsa de la computadora para rellenar su atril.',
                         auto_close = True, auto_close_duration = 5, no_titlebar = True)
+                        calcular_top10(nivel,totalJUG)
                         window.Close()
                         GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2, cargado)
                         break
                 elif aux[1]: #indica si se apreto el cambiar letras
+                    windowCOM.Close()
                     cant_COM += 1
                     sg.PopupNoButtons('La computadora no pudo formar ninguna palabra y cambió las letras de su atril.', auto_close = True, auto_close_duration=3, no_titlebar = True)
                 else: #si no pudo colocar una palabra, ni cambiar las letras, finaliza el juego
+                    windowCOM.Close()
                     sg.PopupNoButtons('La computadora no pudo formar ninguna palabra y no tiene más letras en su bolsa.', auto_close = True, auto_close_duration=3, no_titlebar = True)
+                    calcular_top10(nivel,totalJUG)
                     window.Close()
                     GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2, cargado)
                     break
@@ -1086,19 +1113,23 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
 
 
             elif event == 'TODAS': #cambia todas las letras del atril
+                aux = False
                 if mezclar(atril, bolsa,True):
+                    aux = True
                     cant += 1 #incremento la variable que cuenta las veces que se apretó "Cambiar letras"
                 else:
                     if len(bolsa) == 0:
                         sg.PopupNoButtons('No hay letras en la bolsa',auto_close = True, auto_close_duration = 3, no_titlebar = True)
+                        calcular_top10(nivel,totalJUG)
                         window.Close()
                         GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2, cargado)
                         break
                 cambioActivadoTurno = False
                 desactivar() #hago invisibles los botones de cambio
-                sg.PopupNoButtons('Perdés el turno. Cambios restantes: '+str(3-(cant-1)),auto_close = True, auto_close_duration = 3, no_titlebar = True)
                 error = 0 #reinicio los errores por turno (ya que puedo cambiar las letras luego de haber colocado una o 2 palabras incorrectas)
-                turno = cambio_turno(turno)
+                if aux: #si cambié
+                    sg.PopupNoButtons('Perdés el turno. Cambios restantes: '+str(3-(cant-1)),auto_close = True, auto_close_duration = 3, no_titlebar = True)
+                    turno = cambio_turno(turno)
 
 
             elif event == 'ALGUNAS': #cambia letras especificas del atril (elif auxiliares abajo)
@@ -1113,8 +1144,10 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
 
 
             elif event == 'OK': #cambia las letras seleccionadas
+                aux = False
                 if len(a_cambiar)>0: #si seleccioné letras
                     if mezclar(a_cambiar, bolsa,True):
+                        aux = True
                         cant += 1 #incremento la variable que cuenta las veces que se apretó "Cambiar letras"
                         for i in a_cambiar:
                             window.Element(i).Update(button_color = ('black','white')) #vuelve a poner en blanco a todas las letras del atril
@@ -1126,6 +1159,7 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                                 window.Element(i).Update(image_filename = 'Imagenes/Temas/'+tema.lower()+'/'+l+'_'+tema.lower()+'.png') #le coloco la imagen original
                             if len(bolsa) == 0:
                                 sg.PopupNoButtons('No hay letras en la bolsa',auto_close = True, auto_close_duration = 3, no_titlebar = True)
+                                calcular_top10(nivel,totalJUG)
                                 window.Close()
                                 GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2, cargado)
                                 break
@@ -1138,9 +1172,10 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                     cambioActivado = False #desactivo el cambio para que el atril vuelva a funcionar con normalidad
                     window.Element('CancelAlgunas').Update(visible = False)
                     window.Element('OK').Update(visible = False) #hago invisibles los botones para cambiar algunas letras
-                    sg.PopupNoButtons('Perdés el turno. Cambios restantes: '+str(3-(cant-1)),auto_close = True, auto_close_duration = 3, no_titlebar = True)
                     error = 0 #reinicio los errores por turno (ya que puedo cambiar las letras luego de haber colocado una o 2 palabras incorrectas)
-                    turno = cambio_turno(turno)
+                    if aux: #si cambié
+                        sg.PopupNoButtons('Perdés el turno. Cambios restantes: '+str(3-(cant-1)),auto_close = True, auto_close_duration = 3, no_titlebar = True)
+                        turno = cambio_turno(turno)
 
 
             elif event == 'CancelAlgunas': #cancelo el cambio de algunas letras
@@ -1248,6 +1283,7 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                         else:
                             sg.PopupNoButtons('No hay suficientes letras en la bolsa del jugador para rellenar su atril',
                             auto_close = True, auto_close_duration = 5, no_titlebar = True)
+                            calcular_top10(nivel,totalJUG)
                             window.Close()
                             GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2, cargado)
                             break
