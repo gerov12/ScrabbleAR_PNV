@@ -1,3 +1,5 @@
+![Image of Yaktocat](https://github.com/gerov12/ScrabbleAR_PNV/blob/master/Imagenes/LogoReadme/Logo.png)
+
 Juego creado por Ayelen Naccarato, Anabel Paez La Valle y Geronimo Vega para el Seminario de Python.
 
 Repositorio de Github: github.com/gerov12/ScrabbleAR_PNV
