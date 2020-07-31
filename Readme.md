@@ -1,4 +1,5 @@
 Juego creado por Ayelen Naccarato, Anabel Paez La Valle y Geronimo Vega para el Seminario de Python.
+
 Repositorio de Github: github.com/gerov12/ScrabbleAR_PNV
 
 Todas las imagenes utilizadas son de autoria propia exceptuando las del fin de la partida que son de la galería de modelos 3D del
