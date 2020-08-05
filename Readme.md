@@ -2,9 +2,13 @@
 
 Juego creado por Ayelen Naccarato, Anabel Paez La Valle y Geronimo Vega para el Seminario de Python.
 
+Version de PySimpleGUI: PySimpleGUI 3.6
+
 Repositorio de Github: github.com/gerov12/ScrabbleAR_PNV
 
-Todas las imagenes utilizadas son de autoria propia exceptuando las del fin de la partida que son de la galería de modelos 3D del
+El programa funciona correctamente en Windows y GNU/Linux.
+
+Todas las imagenes utilizadas son de autoria propia exceptuando las del fin de partida y guardar partida que son de la galería de modelos 3D del
 programa Paint3D y son de uso libre.
 
 Ejecutar el archivo "ScrabbleAR.py" para comenzar a jugar, este abrirá el menú principal del juego mediante el cual se podrán
