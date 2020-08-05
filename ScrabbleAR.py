@@ -74,9 +74,9 @@ def main():
                     aux = json.load(archivo)
                 if aux != {}:
                     Tablero.main(True)
+                    break
                 else:
                     sg.PopupNoButtons("No hay ninguna partida guardada.", auto_close = True, auto_close_duration = 4, no_titlebar = True)
-                break
             except (FileNotFoundError):
                 sg.Popup('ERROR. El archivo JSON solicitado o su carpeta contenedora no existen.',no_titlebar=True)
                 sys.exit()
