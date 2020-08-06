@@ -91,6 +91,7 @@ def main():
 
 
                 elif event2 == 'Confirmar':
+                    sg.PopupNoButtons('La configuración fue guardada con éxito', auto_close = True, auto_close_duration = 3, no_titlebar = True)
                     window2.Close()
                     break
 

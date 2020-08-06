@@ -367,6 +367,11 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
             sg.PopupNoButtons(pal + ' no es palabra', auto_close=True, auto_close_duration=3, no_titlebar=True)
             return False
 
+    def actualizar_listado (listbox,lista):
+        '''Actualiza el contenido de las listas de palabras'''
+
+        listbox.Update(values = lista.keys())
+
     def turno_COM (atrilCOM ,nivel, bolsaCOM, cant_COM, inicial, tema, puntajes, casillas_esp, puntCOM, clasificacion = 999):
         '''Funcionamiento de la computadora: arma todas las permutaciones posibles con las letras del atril, verifica si son
         palabras validas y si corresponden a la clasificacion dependiendo del nivel, con un random decide la orientacion de la palabra,
@@ -445,10 +450,9 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                         windowCOM.Close()
                         puntos = sumar_puntos(puntajes, casillas_esp, pal_validas[0], ocupadas, puntCOM) #hay que retornar los puntos
 
-                        del pal_validas
                         print("Palabra colocada")
-                        return [colocada, cambio, inicial, puntos, relleno] #retorna si colocó la palabra, si cambio las letras , la variable "inicial" y si pudo rellenar el atril
-
+                        return [colocada, cambio, inicial, puntos, relleno,pal_validas[0]] #retorna si colocó la palabra, si cambio las letras , la variable "inicial" y si pudo rellenar el atril
+                        del pal_validas
                     else: #si es vertical
                         ocupadas = []
                         coordenada_inicial = "07"+"0"+str(7+aux) #calculo la key de la coordenada inicial
@@ -481,10 +485,9 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                         windowCOM.Close()
                         puntos = sumar_puntos(puntajes, casillas_esp, pal_validas[0], ocupadas, puntCOM) #hay que retornar los puntos
 
-                        del pal_validas
                         print("Palabra colocada")
-                        return [colocada, cambio, inicial, puntos, relleno] #retorna si colocó la palabra, si cambio las letras , la variable "inicial" y si pudo rellenar el atril
-
+                        return [colocada, cambio, inicial, puntos, relleno,pal_validas[0]] #retorna si colocó la palabra, si cambio las letras , la variable "inicial" y si pudo rellenar el atril
+                        del pal_validas
                 else:
                     intentos = 0 #cantididad de orientaciones intentadas (maximo 2)
                     while intentos < 2:
@@ -553,10 +556,9 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                                             windowCOM.Close()
                                             puntos = sumar_puntos(puntajes, casillas_esp, pal_validas[0], ocupadas, puntCOM) #hay que retornar los puntos
 
-                                            del pal_validas
                                             print("Palabra colocada")
-                                            return [colocada, cambio, inicial, puntos, relleno]#retorna si colocó la palabra, si cambio las letras , la variable "inicial" y si pudo rellenar el atril
-
+                                            return [colocada, cambio, inicial, puntos, relleno,pal_validas[0]]#retorna si colocó la palabra, si cambio las letras , la variable "inicial" y si pudo rellenar el atril
+                                            del pal_validas
                                         else:
                                             invalidas.append(coordenada_inicial)
 
@@ -623,10 +625,9 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                                             windowCOM.Close()
                                             puntos = sumar_puntos(puntajes, casillas_esp, pal_validas[0], ocupadas, puntCOM) #hay que retornar los puntos
 
-                                            del pal_validas
                                             print("Palabra colocada")
-                                            return [colocada, cambio, inicial, puntos, relleno] #retorna si colocó la palabra, si cambio las letras , la variable "inicial" y si pudo rellenar el atril
-
+                                            return [colocada, cambio, inicial, puntos, relleno,pal_validas[0]] #retorna si colocó la palabra, si cambio las letras , la variable "inicial" y si pudo rellenar el atril
+                                            del pal_validas
                                         else:
                                             invalidas.append(coordenada_inicial)
 
@@ -766,7 +767,7 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
             guardar_datos(nivel,datos) #llamo a la funcion que serializa la info para subir la info al archivo
 
     def guardar_partida (casillas, atril, atrilCOM, totalCOM, totalJUG, actual_time, tiempo, nivel, nombre, tema, bolsaCOM, bolsa, turno, cant_COM, cant, inicial, error,
-    dic_verbs, dic_lexicon, dic_spelling, puntajes, clasificacion = 999):
+    dic_verbs, dic_lexicon, dic_spelling, puntajes, palabras_com, palabras_jug, clasificacion = 999):
         '''Guarda en un archivo json los datos necesarios para posponer correctamente la partida
         Si la carpeta Archivos no existe levanta una excepcion y lo informa con un Popup'''
 
@@ -785,11 +786,11 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
         if nivel == "nivel3":
             dic_datos = {"tablero": ocupadas, "atril": atrilJUG, "atrilCOM": atrilCOMPU, "totalCOM": totalCOM, "totalJUG": totalJUG, "actual_time": actual_time,
             "tiempo": tiempo, "nivel": nivel, "nombre": nombre, "tema": tema, "bolsaCOM":bolsaCOM, "bolsa": bolsa, "turno": turno, "cant_COM": cant_COM, "cant": cant, "inicial": inicial,
-            "error": error, "dic_verbs": dic_verbs, "dic_lexicon": dic_lexicon, "dic_spelling": dic_spelling, "puntajes": puntajes, "clasificacion": clasificacion}
+            "error": error, "dic_verbs": dic_verbs, "dic_lexicon": dic_lexicon, "dic_spelling": dic_spelling, "puntajes": puntajes, "PalabrasC": palabras_com, "PalabrasJ": palabras_jug, "clasificacion": clasificacion}
         else:
             dic_datos = {"tablero": ocupadas, "atril": atrilJUG, "atrilCOM": atrilCOMPU, "totalCOM": totalCOM, "totalJUG": totalJUG, "actual_time": actual_time,
             "tiempo": tiempo, "nivel": nivel, "nombre": nombre, "tema": tema, "bolsaCOM":bolsaCOM, "bolsa": bolsa, "turno": turno, "cant_COM": cant_COM, "cant": cant, "inicial": inicial,
-            "error": error, "dic_verbs": dic_verbs, "dic_lexicon": dic_lexicon, "dic_spelling": dic_spelling, "puntajes": puntajes}
+            "error": error, "dic_verbs": dic_verbs, "dic_lexicon": dic_lexicon, "dic_spelling": dic_spelling, "puntajes": puntajes,"PalabrasC": palabras_com, "PalabrasJ": palabras_jug}
 
         try:
             with open ("Archivos/Partida.json", 'w') as archivo:
@@ -837,6 +838,8 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
         dic_lexicon = dic_datos["dic_lexicon"]
         dic_spelling = dic_datos["dic_spelling"]
         puntajes = dic_datos["puntajes"]
+        PalabrasC = dic_datos["PalabrasC"]
+        PalabrasJ = dic_datos["PalabrasJ"]
         if nivel == "nivel3":
             clasificacion = dic_datos["clasificacion"]
 
@@ -900,7 +903,7 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
     ] #Interfaz del cronometro
 
     frameTurno = [
-        [sg.Text('', size=(21,1), font=('', 10), justification='center', background_color = 'grey', key='turno')]
+        [sg.Text('', size=(21,1), font=('', 10),  background_color = 'grey', key='turno')] #justification='center',
     ] #Interfaz del turno
 
     #elementos de la derecha de la ventana
@@ -927,6 +930,19 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
             [sg.Button('Cancelar', button_color = ('black','white'), visible = False, key = 'CancelAlgunas'),sg.Button('Cambiar', button_color = ('black','white'), visible = False, key = 'OK')]
     ]
 
+    frameJugador = [
+        [sg.Listbox(values = [], size = (20,19), key = 'Lista_J')]
+    ]
+    frameCompu = [
+        [sg.Listbox(values = [], size = (20,19), key = 'Lista_C')]
+    ]
+
+    #Listas de palabras
+    Palabras = [
+        [sg.Frame('PALABRAS '+nombre.upper(), frameJugador, title_color='white',background_color='black')],
+        [sg.Frame('PALABRAS COM', frameCompu, title_color='black',background_color='white')]
+    ]
+
     #marco con el tablero
     frameTablero =[
         [sg.Frame('',tablero,border_width=8)]
@@ -934,13 +950,13 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
 
     #layout del juego
     juego = [
-        [sg.Column(frameTablero),sg.VerticalSeparator(), sg.Column(colExtras)] #tablero a la izquierda y elementos a la derecha
+        [sg.Column(Palabras), sg.VerticalSeparator(), sg.Column(frameTablero),sg.VerticalSeparator(), sg.Column(colExtras)] #tablero a la izquierda y elementos a la derecha
     ]
 
     window = sg.Window('Tablero de nivel '+nivel[-1]).Layout(juego).Finalize()
     #Finalize() hace una especie de lectura de la ventana para que los cambios a los botones se apliquen
 
-    if cargado: #carga el tablero, los atriles y los puntajes
+    if cargado: #carga el tablero, los atriles, los puntajes y las listas de palabras ingresadas
         try:
             for key in ocupadas.keys():
                 window.Element(key).Update(text = ocupadas[key])
@@ -953,6 +969,8 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                 window.Element(key).Update(image_filename = 'Imagenes/Temas/'+tema.lower()+'/'+atril_com[key]+'_'+tema.lower()+'.png')
             window.Element('PC').Update(value = totalCOM)
             window.Element('PJ').Update(value = totalJUG)
+            actualizar_listado(window.Element('Lista_C'), PalabrasC)
+            actualizar_listado(window.Element('Lista_J'), PalabrasJ)
         except (FileNotFoundError):
             sg.Popup('Error. No existe la carpeta "Imagenes" o la imagen solicitada.', no_titlebar=True)
             sys.Exit()
@@ -975,6 +993,8 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
     casillas_ocupadas = [] #lista de casillas ocupadas en el turno
     fichas_desocupadas = [] #lista de lugares del atril desocupados
     orientacion = ''
+    PalabrasJ = {}  #Palabras que ingresó el jugador
+    PalabrasC = {}  #Palabras que ingresó la computadora
 
     if not cargado:
         inicial = True #indica si se tiene que colocar la primer ficha de la partida
@@ -1035,6 +1055,8 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                         window.Close()
                         GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2, cargado)
                         break
+                    PalabrasC[aux[5]] = aux[5]
+                    actualizar_listado(window.FindElement('Lista_C'), PalabrasC)
                 elif aux[1]: #indica si se apreto el cambiar letras
                     windowCOM.Close()
                     cant_COM += 1
@@ -1061,6 +1083,8 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                         window.Close()
                         GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2, cargado)
                         break
+                    PalabrasC[aux[5]] = aux[5]
+                    actualizar_listado(window.FindElement('Lista_C'), PalabrasC)
                 elif aux[1]: #indica si se apreto el cambiar letras
                     windowCOM.Close()
                     cant_COM += 1
@@ -1269,6 +1293,8 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                             inicial = False #desactivo la variable que indica que la palabra inicial aún no se colocó
                             error = 0
                             turno = cambio_turno(turno)
+                            PalabrasJ[word] = word
+                            actualizar_listado(window.FindElement('Lista_J'), PalabrasJ)
                         else: #si está desocupada
                             sg.PopupNoButtons("Una letra debe ocupar la casilla inicial", auto_close=True,auto_close_duration=3,no_titlebar=True) #informo el error
                             devolver(fichas_desocupadas, casillas_ocupadas) #devuelve las letras al atril
@@ -1288,6 +1314,8 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                             window.Close()
                             GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2, cargado)
                             break
+                        PalabrasJ[word] = word
+                        actualizar_listado(window.FindElement('Lista_J'), PalabrasJ)
                         error = 0
                         turno = cambio_turno(turno)
                 else:
@@ -1309,10 +1337,10 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                 if res == 'Yes':
                     if nivel == "nivel3":
                         guardar_partida(casillas, atril, atrilCOM, totalCOM, totalJUG, actual_time, tiempo, nivel, nombre, tema, bolsaCOM, bolsa, turno, cant_COM, cant, inicial, error,
-                        dic_verbs, dic_lexicon, dic_spelling, puntajes, clasificacion)
+                        dic_verbs, dic_lexicon, dic_spelling, puntajes, PalabrasC, PalabrasJ, clasificacion)
                     else:
                         guardar_partida(casillas, atril, atrilCOM, totalCOM, totalJUG, actual_time, tiempo, nivel, nombre, tema, bolsaCOM, bolsa, turno, cant_COM, cant, inicial, error,
-                        dic_verbs, dic_lexicon, dic_spelling, puntajes)
+                        dic_verbs, dic_lexicon, dic_spelling, puntajes, PalabrasC, PalabrasJ)
                     window.Close()
 
                     guardar_p = [
