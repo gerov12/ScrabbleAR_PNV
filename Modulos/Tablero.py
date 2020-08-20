@@ -402,7 +402,7 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                 if es_palabra(i, nivel, True): #filtro las palabras validas (False de "clickeo" y True de "com")
                     pal_validas.append(i)
                     print("encontró una pal valida")#
-
+        aux_validas = pal_validas[:] #lista auxiliar de palabras validas, para cuando se cambia de orientacion
         cambio = False
         if len(pal_validas) == 0:
             if cant_COM <= 3:
@@ -410,6 +410,7 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                 return [colocada, cambio, inicial, puntCOM] #retorna si colocó la palabra, si cambio las letras y la variable "inicial"
             else:
                 window.Close()
+                sg.PopupNoButtons('La computadora ya hizo los 3 cambios de letras y no pudo formar ninguna palabra.', auto_close = True, auto_close_duration = 4, no_titlebar = True)
                 GameOver(totalJUG,puntCOM, nombre, tema, nivel, tiempo, modificado, modificado2, cargado)
                 sys.exit()
         else: #si tiene palabra valida
@@ -491,7 +492,7 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                 else:
                     intentos = 0 #cantididad de orientaciones intentadas (maximo 2)
                     while intentos < 2:
-
+                        pal_validas = aux_validas[:]
                         if orientacion == 1: #cambio la orientación
                             orientacion = 0
                         else:
@@ -502,7 +503,7 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                             while len(pal_validas) > 0:
                                 invalidas = []
                                 colocada = False
-                                while colocada == False and len(invalidas) <= (15*(len(pal_validas[0])-1)): #mientras no haya colocado la palabra y haya coordenadas iniciales validas
+                                while colocada == False and len(invalidas) <= (((15-(len(pal_validas[0])-1))-len(pal_validas[0]))*15): #mientras no haya colocado la palabra y haya coordenadas iniciales validas
                                     x = random.randrange(15-(len(pal_validas[0])-1))
                                     if x<10:
                                         coordenada_inicial = '0'+str(x) #si el valor de la coordenada x es de un solo digito le agrego un 0 adelante
@@ -571,7 +572,7 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                             while len(pal_validas) > 0:
                                 invalidas = []
                                 colocada = False
-                                while colocada == False and len(invalidas) <= (15*(len(pal_validas[0])-1)): #mientras no haya colocado la palabra y haya coordenadas iniciales validas
+                                while colocada == False and len(invalidas) <= (((15-(len(pal_validas[0])-1))-len(pal_validas[0]))*15): #mientras no haya colocado la palabra y haya coordenadas iniciales validas
                                     x = random.randrange(15)
                                     if x<10:
                                         coordenada_inicial = '0'+str(x) #si el valor de la coordenada x es de un solo digito le agrego un 0 adelante
@@ -631,9 +632,10 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                                         else:
                                             invalidas.append(coordenada_inicial)
 
-                                if len(invalidas) > (15*(len(pal_validas[0])-1)): #si se acabaron las coordenadas iniciales validas (la palabra no entra)
+                                if len(invalidas) > (((15-(len(pal_validas[0])-1))-len(pal_validas[0]))*15): #si se acabaron las coordenadas iniciales validas (la palabra no entra)
                                     del pal_validas[0] #la segunda palabra pasa a ser la 0
                                     del invalidas #vacio la lista de coordenadas iniciales validas
+                                    print('NO HAY COORDENADAS INICIALES VÁLIDAS')
 
                         intentos += 1 #ya intenté con una orientacion
 
@@ -646,6 +648,7 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
             return [colocada, cambio, inicial, puntCOM] #retorna si colocó la palabra, si cambio las letras y la variable "inicial"
         else:
             window.Close()
+            sg.PopupNoButtons('La computadora ya hizo los 3 cambios de letras y no pudo formar ninguna palabra.', auto_close = True, auto_close_duration = 4, no_titlebar = True)
             GameOver.main(totalJUG, puntCOM, nombre, tema, nivel, tiempo, modificado, modificado2, cargado)
             sys.exit()
 
@@ -671,7 +674,7 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
 
         print('entra a la funcion') #
         total=0
-        valor=0 #valor por el que hay que multiplicar la palabra
+        valor=1 #valor por el que hay que multiplicar la palabra
         restar=0#valor por el que hay que restar la palabra
         ok=False #si hay casilla multiplicadora de palabra
         ok2=False#si hay una casilla de resto
@@ -686,10 +689,10 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                     print('sumó = '+str(total)) #
                     if casillas_esp[casilla[i]][0] == 'Px2':
                         print('duplica palabra') #
-                        valor = valor+2
+                        valor = valor * 2
                     else:
                         print('triplica palabra') #
-                        valor = valor+3
+                        valor = valor * 3
                     ok = True
                 elif casillas_esp[casilla[i]][0] == 'Lx2' or casillas_esp[casilla[i]][0] == 'Lx3':
                     if casillas_esp[casilla[i]][0] == 'Lx2':
@@ -735,9 +738,12 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
     def guardar_datos (nivel,datos):
         '''Si el archivo NO existe lo crea, serializa la informacion ingresada en 'datos' y lo carga en el archivo JSON.
         Si el archivo existe, lo abre, actualiza la información y la carga en el archivo JSON'''
-
-        with open('Archivos/top10_'+nivel+'.json','w') as archivo: #(si no existe lo creo al archivo) lo abro en modo escritura
-            json.dump(datos,archivo) #serializo la info
+        try:
+            with open('Archivos/top10_'+nivel+'.json','w') as archivo: #(si no existe lo creo al archivo) lo abro en modo escritura
+                json.dump(datos,archivo) #serializo la info
+        except(FileNotFoundError):
+            sg.Popup('Error. No existe la carpeta "Archivos".', no_titlebar=True)
+            sys.Exit()
 
     def calcular_top10(nivel,puntaje): #recibo el puntaje del jugador
         '''Una vez terminado el juego, esta funcion se fija en el puntaje del jugador:
@@ -950,7 +956,7 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
 
     #layout del juego
     juego = [
-        [sg.Column(Palabras), sg.VerticalSeparator(), sg.Column(frameTablero),sg.VerticalSeparator(), sg.Column(colExtras)] #tablero a la izquierda y elementos a la derecha
+        [sg.Column(Palabras), sg.VerticalSeparator(), sg.Column(frameTablero), sg.VerticalSeparator(), sg.Column(colExtras)] #tablero a la izquierda y elementos a la derecha
     ]
 
     window = sg.Window('Tablero de nivel '+nivel[-1]).Layout(juego).Finalize()
@@ -993,8 +999,7 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
     casillas_ocupadas = [] #lista de casillas ocupadas en el turno
     fichas_desocupadas = [] #lista de lugares del atril desocupados
     orientacion = ''
-    PalabrasJ = {}  #Palabras que ingresó el jugador
-    PalabrasC = {}  #Palabras que ingresó la computadora
+
 
     if not cargado:
         inicial = True #indica si se tiene que colocar la primer ficha de la partida
@@ -1005,9 +1010,11 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
         turno = seleccion_random() #Elige quien comienza el juego
         error = 0 #Cantidad de veces que una palabra ingresada no es válida
         actual_time = 0
-        start_time = int(round(time.time() * 100))
+        start_time = int(round(time.time() * 100)) #Inicializo en 0
+        PalabrasJ = {}  #Palabras que ingresó el jugador
+        PalabrasC = {}  #Palabras que ingresó la computadora
     else:
-        start_time = int(round(time.time() * 100)) - actual_time
+        start_time = int(round(time.time() * 100)) - actual_time #Inicializo con el tiempo guardado
 
     paused = False
     cambioActivado = False #si se están cambiando letras
@@ -1048,6 +1055,8 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                     window.Element("PC").Update(value = str(totalCOM))
                     print(totalCOM)
                     inicial = aux[2] #modifica la variable "inicial"
+                    PalabrasC[aux[5]] = aux[5]
+                    actualizar_listado(window.FindElement('Lista_C'), PalabrasC)
                     if not aux[4]: #indica si no se pudo rellenar el atril
                         sg.PopupNoButtons('No hay suficientes letras en la bolsa de la computadora para rellenar su atril.',
                         auto_close = True, auto_close_duration = 5, no_titlebar = True)
@@ -1055,8 +1064,7 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                         window.Close()
                         GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2, cargado)
                         break
-                    PalabrasC[aux[5]] = aux[5]
-                    actualizar_listado(window.FindElement('Lista_C'), PalabrasC)
+
                 elif aux[1]: #indica si se apreto el cambiar letras
                     windowCOM.Close()
                     cant_COM += 1
@@ -1076,6 +1084,8 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                     window.Element("PC").Update(value = str(totalCOM))
                     print(totalCOM)
                     inicial = aux[2] #modifica la variable "inicial"
+                    PalabrasC[aux[5]] = aux[5]
+                    actualizar_listado(window.FindElement('Lista_C'), PalabrasC)
                     if not aux[4]: #indica si no se pudo rellenar el atril
                         sg.PopupNoButtons('No hay suficientes letras en la bolsa de la computadora para rellenar su atril.',
                         auto_close = True, auto_close_duration = 5, no_titlebar = True)
@@ -1083,8 +1093,7 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                         window.Close()
                         GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2, cargado)
                         break
-                    PalabrasC[aux[5]] = aux[5]
-                    actualizar_listado(window.FindElement('Lista_C'), PalabrasC)
+
                 elif aux[1]: #indica si se apreto el cambiar letras
                     windowCOM.Close()
                     cant_COM += 1
@@ -1098,7 +1107,7 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                     break
             turno = cambio_turno(turno)
         else: #1 turno del jugador
-            if not cambioActivadoTurno:
+            if not cambioActivadoTurno: #Para no activar los botones si cambio las letras
                 pausa_botones_activar()
             window.Element('pausa').Update(disabled = False)
             window.Element('turno').Update(value = nombre)
@@ -1305,6 +1314,8 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                         print('nuevo total: '+str(totalJUG)) #
                         print() #
                         window.Element('PJ').Update(value = totalJUG)
+                        PalabrasJ[word] = word
+                        actualizar_listado(window.FindElement('Lista_J'), PalabrasJ)
                         if mezclar(fichas_desocupadas, bolsa): #relleno el atril
                             fichas_desocupadas = [] #reinicio la lista de fichas desocupadas
                         else:
@@ -1314,8 +1325,6 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                             window.Close()
                             GameOver.main(totalJUG, totalCOM, nombre, tema, nivel, tiempo, modificado, modificado2, cargado)
                             break
-                        PalabrasJ[word] = word
-                        actualizar_listado(window.FindElement('Lista_J'), PalabrasJ)
                         error = 0
                         turno = cambio_turno(turno)
                 else:
