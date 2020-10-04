@@ -1,3 +1,4 @@
+import os
 import sys
 import json
 import time
@@ -8,8 +9,10 @@ import PySimpleGUI as sg
 from pattern.es import tag
 from Modulos import Reglas
 from Modulos import GameOver
+from os.path import isdir, isfile
 
 def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', tiempo = 3.0, modificado = False, modificado2 = False):
+
     def cargar_diccionarios(dic_verbs, dic_lexicon, dic_spelling):
         '''Crea un nuevo diccionario para los 3 del modulo pattern.es pero quitandole las tildes a las palabras'''
 
@@ -62,8 +65,33 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                         for i in range(1,cantidad+1): #guarda "cantidad" veces la letra correspondiente
                             bolsa.append(letra)
             except (FileNotFoundError):
-                sg.Popup('ERROR. El archivo JSON solicitado o su carpeta contenedora no existen.',no_titlebar=True)
-                sys.exit()
+                if not isdir("Archivos"): #si no existe la carpeta archivos, informo y doy la opcion de crearla
+                    respuesta = sg.PopupYesNo('ERROR. La carpeta "Archivos" no existe. ¿Desea crearla?',no_titlebar=True)
+                    if respuesta == "Yes":
+                        os.mkdir('Archivos')
+                    else:
+                        sys.exit()
+                if not isfile("Archivos/Letras.json"): #si no existe el json
+                    respuesta = sg.PopupYesNo('ERROR. El archivo JSON "Letras.json" no existe. ¿Desea crear el archivo?',no_titlebar=True) #pregunto si quiere crear el json faltante
+                    if respuesta == "Yes":
+                        auxDic = {"nivel1": {"A": 11, "E":11, "O":8, "S":7, "I":6, "U":6, "N":5, "L":4, "R":4, "T":4, "C":4, "D":4,
+                         "G":2, "M":3, "B":3, "P":2, "F":2, "H":2, "V":2, "Y":1, "J":2, "K":1, "LL":1, "Ñ":1, "Q":1, "RR":1,
+                          "W":1, "X":1, "Z":1}, "nivel2" : { "A": 8 , "E": 8 , "O": 5 , "S": 4 , "I": 4 , "U": 4 , "N": 3 ,
+                          "L": 3 , "R": 3 , "T": 2 , "C": 2 , "D": 3 , "G": 2 , "M": 2 , "B": 2 , "P": 2 , "F": 2 , "H": 2 ,
+                          "V": 2 ,"Y": 1 , "J": 2 , "K": 1 , "LL": 1 , "Ñ": 1 , "Q": 1 , "RR": 1 , "W": 1 , "X": 1 , "Z": 1 },
+                          "nivel3" : { "A": 5 , "E": 5 , "O": 4 , "S": 3 , "I": 4 , "U": 4 , "N": 2 , "L": 2 , "R": 4 , "T": 2 ,
+                          "C": 2 , "D": 2 , "G": 2 , "M": 2 , "B": 3 , "P": 2 , "F": 2 , "H": 2 , "V": 2 ,"Y": 1 , "J": 2 ,
+                          "K": 1 , "LL": 1 , "Ñ": 1 , "Q": 1 , "RR": 1 , "W": 1 , "X": 1 , "Z": 1 }}
+                        with open('Archivos/Letras.json','w') as file: #Guardo el diccionario vacio en un JSON
+                            json.dump(auxDic,file)
+                        with open('Archivos/Letras.json','r') as archivo_letras:
+                            letras = json.load(archivo_letras)
+                            letrasN = letras[nivel] #toma el diccionario de letras:cantidades del nivel correspondiente
+                            for letra, cantidad in letrasN.items():
+                                for i in range(1,cantidad+1): #guarda "cantidad" veces la letra correspondiente
+                                    bolsa.append(letra)
+                    else:
+                        sys.exit()
         else:
             try:
                 with open('Archivos/Letras_modificado.json','r') as archivo_letras:
@@ -73,8 +101,33 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                         for i in range(1,cantidad+1): #guarda "cantidad" veces la letra correspondiente
                             bolsa.append(letra)
             except (FileNotFoundError):
-                sg.Popup('ERROR. El archivo JSON solicitado o su carpeta contenedora no existen.',no_titlebar=True)
-                sys.exit()
+                if not isdir("Archivos"): #si no existe la carpeta archivos, informo y doy la opcion de crearla
+                    respuesta = sg.PopupYesNo('ERROR. La carpeta "Archivos" no existe. ¿Desea crearla?',no_titlebar=True)
+                    if respuesta == "Yes":
+                        os.mkdir('Archivos')
+                    else:
+                        sys.exit()
+                if not isfile("Archivos/Letras_modificado.json"): #si no existe el json
+                    respuesta = sg.PopupYesNo('ERROR. El archivo JSON "Letras_modificado.json" no existe. ¿Desea crear el archivo (con los valores por defecto)?',no_titlebar=True) #pregunto si quiere crear el json faltante
+                    if respuesta == "Yes":
+                        auxDic = {"nivel1": {"A": 11, "E":11, "O":8, "S":7, "I":6, "U":6, "N":5, "L":4, "R":4, "T":4, "C":4, "D":4,
+                         "G":2, "M":3, "B":3, "P":2, "F":2, "H":2, "V":2, "Y":1, "J":2, "K":1, "LL":1, "Ñ":1, "Q":1, "RR":1,
+                          "W":1, "X":1, "Z":1}, "nivel2" : { "A": 8 , "E": 8 , "O": 5 , "S": 4 , "I": 4 , "U": 4 , "N": 3 ,
+                          "L": 3 , "R": 3 , "T": 2 , "C": 2 , "D": 3 , "G": 2 , "M": 2 , "B": 2 , "P": 2 , "F": 2 , "H": 2 ,
+                          "V": 2 ,"Y": 1 , "J": 2 , "K": 1 , "LL": 1 , "Ñ": 1 , "Q": 1 , "RR": 1 , "W": 1 , "X": 1 , "Z": 1 },
+                          "nivel3" : { "A": 5 , "E": 5 , "O": 4 , "S": 3 , "I": 4 , "U": 4 , "N": 2 , "L": 2 , "R": 4 , "T": 2 ,
+                          "C": 2 , "D": 2 , "G": 2 , "M": 2 , "B": 3 , "P": 2 , "F": 2 , "H": 2 , "V": 2 ,"Y": 1 , "J": 2 ,
+                          "K": 1 , "LL": 1 , "Ñ": 1 , "Q": 1 , "RR": 1 , "W": 1 , "X": 1 , "Z": 1 }}
+                        with open('Archivos/Letras_modificado.json','w') as file: #Guardo el diccionario vacio en un JSON
+                            json.dump(auxDic,file)
+                        with open('Archivos/Letras_modificado.json','r') as archivo_letras:
+                            letras = json.load(archivo_letras)
+                            letrasN = letras #toma el diccionario de letras modificado
+                            for letra, cantidad in letrasN.items():
+                                for i in range(1,cantidad+1): #guarda "cantidad" veces la letra correspondiente
+                                    bolsa.append(letra)
+                    else:
+                        sys.exit()
 
         return bolsa
 
@@ -89,15 +142,41 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                 with open('Archivos/Puntajes.json','r') as archivo_puntajes:
                     puntajes = json.load(archivo_puntajes)
             except (FileNotFoundError):
-                sg.Popup('ERROR. El archivo JSON solicitado o su carpeta contenedora no existen.',no_titlebar=True)
-                sys.exit()
+                if not isdir("Archivos"): #si no existe la carpeta archivos, informo y doy la opcion de crearla
+                    respuesta = sg.PopupYesNo('ERROR. La carpeta "Archivos" no existe. ¿Desea crearla?',no_titlebar=True)
+                    if respuesta == "Yes":
+                        os.mkdir('Archivos')
+                    else:
+                        sys.exit()
+                if not isfile("Archivos/Puntajes.json"): #si no existe el json
+                    respuesta = sg.PopupYesNo('ERROR. El archivo JSON "Puntajes.json" no existe. ¿Desea crear el archivo?',no_titlebar=True) #pregunto si quiere crear el json faltante
+                    if respuesta == "Yes":
+                        auxDic = {"A": 1, "E":1, "O":1, "S":1, "I":1, "U":1, "N":1, "L":1, "R":1, "T":1, "C":2, "D":2, "G":2,
+                        "M":3, "B":3, "P":3, "F":4, "H":4, "V":4, "Y":4, "J":6, "K":8, "LL":8, "Ñ":8, "Q":8, "RR":8, "W":8,
+                        "X":8, "Z":10}
+                        with open('Archivos/Puntajes.json','w') as file: #Guardo el diccionario vacio en un JSON
+                            json.dump(auxDic,file)
+                        with open('Archivos/Puntajes.json','r') as archivo_puntajes:
+                            puntajes = json.load(archivo_puntajes)
+                    else:
+                        sys.exit()
         else:
-            try:
-                with open ('Archivos/Puntajes_modificado.json', 'r') as archivo_puntajes:
-                    puntajes = json.load(archivo_puntajes)
-            except (FileNotFoundError):
-                sg.Popup('ERROR. El archivo JSON solicitado o su carpeta contenedora no existen.',no_titlebar=True)
-                sys.exit()
+            if not isdir("Archivos"): #si no existe la carpeta archivos, informo y doy la opcion de crearla
+                respuesta = sg.PopupYesNo('ERROR. La carpeta "Archivos" no existe. ¿Desea crearla?',no_titlebar=True)
+                if respuesta == "Yes":
+                    os.mkdir('Archivos')
+                else:
+                    sys.exit()
+            if not isfile("Archivos/Puntajes_modificado.json"): #si no existe el json
+                respuesta = sg.PopupYesNo('ERROR. El archivo JSON "Puntajes_modificado.json" no existe. ¿Desea crear el archivo (con los valores por defecto)?',no_titlebar=True) #pregunto si quiere crear el json faltante
+                if respuesta == "Yes":
+                    auxDic = {"A": 1, "E":1, "O":1, "S":1, "I":1, "U":1, "N":1, "L":1, "R":1, "T":1, "C":2, "D":2, "G":2,
+                    "M":3, "B":3, "P":3, "F":4, "H":4, "V":4, "Y":4, "J":6, "K":8, "LL":8, "Ñ":8, "Q":8, "RR":8, "W":8,
+                    "X":8, "Z":10}
+                    with open('Archivos/Puntajes_modificado.json','w') as file: #Guardo el diccionario vacio en un JSON
+                        json.dump(auxDic,file)
+                else:
+                    sys.exit()
         return puntajes
 
     def cargar_casillas():
@@ -109,8 +188,37 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                 cas = json.load(archivo_casillas)
             return cas
         except (FileNotFoundError):
-            sg.Popup('ERROR. El archivo JSON solicitado o su carpeta contenedora no existen.',no_titlebar=True)
-            sys.exit()
+            if not isdir("Archivos"): #si no existe la carpeta archivos, informo y doy la opcion de crearla
+                respuesta = sg.PopupYesNo('ERROR. La carpeta "Archivos" no existe. ¿Desea crearla?',no_titlebar=True)
+                if respuesta == "Yes":
+                    os.mkdir('Archivos')
+                else:
+                    sys.exit()
+            if not isfile("Archivos/Casillas.json"): #si no existe el json
+                respuesta = sg.PopupYesNo('ERROR. El archivo JSON "Casillas.json" no existe. ¿Desea crear el archivo?',no_titlebar=True) #pregunto si quiere crear el json faltante
+                if respuesta == "Yes":
+                    auxLis = ["0000","0001","0002","0003","0004","0005","0006","0007","0008","0009","0010","0011","0012","0013","0014",
+                            "0100","0101","0102","0103","0104","0105","0106","0107","0108","0109","0110","0111","0112","0113","0114",
+                            "0200","0201","0202","0203","0204","0205","0206","0207","0208","0209","0210","0211","0212","0213","0214",
+                            "0300","0301","0302","0303","0304","0305","0306","0307","0308","0309","0310","0311","0312","0313","0314",
+                            "0400","0401","0402","0403","0404","0405","0406","0407","0408","0409","0410","0411","0412","0413","0414",
+                            "0500","0501","0502","0503","0504","0505","0506","0507","0508","0509","0510","0511","0512","0513","0514",
+                            "0600","0601","0602","0603","0604","0605","0606","0607","0608","0609","0610","0611","0612","0613","0614",
+                            "0700","0701","0702","0703","0704","0705","0706","0707","0708","0709","0710","0711","0712","0713","0714",
+                            "0800","0801","0802","0803","0804","0805","0806","0807","0808","0809","0810","0811","0812","0813","0814",
+                            "0900","0901","0902","0903","0904","0905","0906","0907","0908","0909","0910","0911","0912","0913","0914",
+                            "1000","1001","1002","1003","1004","1005","1006","1007","1008","1009","1010","1011","1012","1013","1014",
+                            "1100","1101","1102","1103","1104","1105","1106","1107","1108","1109","1110","1111","1112","1113","1114",
+                            "1200","1201","1202","1203","1204","1205","1206","1207","1208","1209","1210","1211","1212","1213","1214",
+                            "1300","1301","1302","1303","1304","1305","1306","1307","1308","1309","1310","1311","1312","1313","1314",
+                            "1400","1401","1402","1403","1404","1405","1406","1407","1408","1409","1410","1411","1412","1413","1414"]
+                    with open('Archivos/Casillas.json','w') as file: #Guardo el diccionario vacio en un JSON
+                        json.dump(auxLis,file)
+                    with open('Archivos/Casillas.json','r') as archivo_casillas: #Cargo las casillas con el json que acabo de crear
+                        cas = json.load(archivo_casillas)
+                    return cas
+                else:
+                    sys.exit()
 
     def cargar_casillas_especiales(nivel):
         '''Carga las keys de las casillas especiales del tablero.
@@ -121,8 +229,45 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                 casillas_esp=json.load(archivo_casillas)
             return casillas_esp[nivel] #devuelve el dic del nivel correspondiente
         except (FileNotFoundError):
-            sg.Popup('ERROR. El archivo JSON solicitado o su carpeta contenedora no existen.',no_titlebar=True)
-            sys.exit()
+            if not isdir("Archivos"): #si no existe la carpeta archivos, informo y doy la opcion de crearla
+                respuesta = sg.PopupYesNo('ERROR. La carpeta "Archivos" no existe. ¿Desea crearla?',no_titlebar=True)
+                if respuesta == "Yes":
+                    os.mkdir('Archivos')
+                else:
+                    sys.exit()
+            if not isfile("Archivos/Especiales.json"): #si no existe el json
+                respuesta = sg.PopupYesNo('ERROR. El archivo JSON "Especiales.json" no existe. ¿Desea crear el archivo?',no_titlebar=True) #pregunto si quiere crear el json faltante
+                if respuesta == "Yes":
+                    auxDic = {"nivel1": {"0707":["inicio", "#DC143C"],"0101": ["Px2","#FF8000"], "0202":["Px2","#FF8000"], "0303":["Px2","#FF8000"], "0404": ["Px2","#FF8000"],
+                    "0113":["Px2","#FF8000"], "0212":["Px2","#FF8000"], "0311":["Px2","#FF8000"], "0410": ["Px2","#FF8000"], "1301":["Px2","#FF8000"], "1202":["Px2","#FF8000"],
+                    "1103":["Px2","#FF8000"], "1004":["Px2","#FF8000"], "1010":["Px2","#FF8000"], "1111": ["Px2","#FF8000"], "1212":["Px2","#FF8000"], "1313":["Px2","#FF8000"],
+                    "0105":["Lx3","blue"],"0109":["Lx3","blue"], "0509":["Lx3","blue"], "0505":["Lx3","blue"], "0501":["Lx3","blue"], "0513":["Lx3","blue"],
+                    "0913":["Lx3","blue"], "0909": ["Lx3","blue"], "0905":["Lx3","blue"], "0901": ["Lx3","blue"], "1305":["Lx3","blue"], "1309":["Lx3","blue"],
+                    "0300": ["Lx2","#00FF00"], "1100":["Lx2","#00FF00"], "0802":["Lx2","#00FF00"], "0602":["Lx2","#00FF00"], "0703":["Lx2","#00FF00"], "0206":["Lx2","#00FF00"],
+                    "0307":["Lx2","#00FF00"], "0208":["Lx2","#00FF00"], "0606":["Lx2","#00FF00"], "0608":["Lx2","#00FF00"], "0806":["Lx2","#00FF00"], "0808":["Lx2","#00FF00"],
+                    "1107":["Lx2","#00FF00"], "1206":["Lx2","#00FF00"], "1208":["Lx2","#00FF00"], "0711":["Lx2","#00FF00"], "0612":["Lx2","#00FF00"], "0812":["Lx2","#00FF00"],
+                    "0314":["Lx2","#00FF00"], "1114":["Lx2","#00FF00"], "0000": ["Px3", "#FF00FF"], "0007":["Px3", "#FF00FF"], "0014":["Px3", "#FF00FF"], "0700":["Px3", "#FF00FF"],
+                    "0714": ["Px3", "#FF00FF"], "1400":["Px3", "#FF00FF"], "1407":["Px3", "#FF00FF"], "1414":["Px3","#FF00FF"]}, "nivel2": {"0707":["inicio", "#DC143C"],"0606":["Px2", "#FF8000"],
+                    "0608": ["Px2","#FF8000"], "0703": ["Px2", "#FF8000"], "0711":["Px2", "#FF8000"], "0806":["Px2", "#FF8000"], "0808":["Px2", "#FF8000"], "0202": ["Lx3", "blue"],
+                    "0212":["Lx3", "blue"], "0303":["Lx3", "blue"], "0311":["Lx3", "blue"], "0404":["Lx3", "blue"], "0410":["Lx3", "blue"], "0505":["Lx3", "blue"],
+                    "0509":["Lx3", "blue"], "0905":["Lx3", "blue"], "0909":["Lx3", "blue"], "1004":["Lx3", "blue"], "1010":["Lx3", "blue"], "1103":["Lx3", "blue"],
+                    "1111":["Lx3", "blue"], "1202":["Lx3", "blue"], "1212":["Lx3", "blue"], "0207": ["Lx2", "#00FF00"], "0602":["Lx2", "#00FF00"], "0612":["Lx2", "#00FF00"],
+                    "0802":["Lx2", "#00FF00"], "0812":["Lx2", "#00FF00"], "1207":["Lx2", "#00FF00"], "0000": ["Px3", "#FF00FF"], "0014":["Px3", "#FF00FF"], "1400":["Px3","#FF00FF"],
+                    "1414":["Px3", "#FF00FF"], "0007": ["R2", "yellow"], "0101":["R2", "yellow"], "0113":["R2", "yellow"], "0700":["R2", "yellow"], "0714":["R2", "yellow"],
+                    "1301":["R2", "yellow"], "1313":["R2", "yellow"], "1407":["R2", "yellow"]}, "nivel3": {"0707":["inicio","#DC143C"],"0202":["Px2","#FF8000"],"0303":["Px2","#FF8000"],
+                    "0212":["Px2","#FF8000"],"0311":["Px2","#FF8000"],"1103":["Px2","#FF8000"],"1202":["Px2","#FF8000"],"1111":["Px2","#FF8000"],"1212":["Px2","#FF8000"],"0206":["Lx3","blue"],
+                    "0307":["Lx3","blue"],"0208":["Lx3","blue"],"0606":["Lx3","blue"],"0806":["Lx3","blue"],"0608":["Lx3","blue"],"0808":["Lx3","blue"],"1107":["Lx3","blue"],
+                    "1206":["Lx3","blue"],"1208":["Lx3","blue"],"0601":["Lx2","#00FF00"],"0801":["Lx2","#00FF00"],"0505":["Lx2","#00FF00"],"0905":["Lx2","#00FF00"],"0509":["Lx2","#00FF00"],
+                    "0909":["Lx2","#00FF00"],"0613":["Lx2","#00FF00"],"0813":["Lx2","#00FF00"],"0700":["Px3","#FF00FF"],"0007":["Px3","#FF00FF"],"0714":["Px3","#FF00FF"],"1407":["Px3","#FF00FF"],
+                    "0000":["R2","yellow"],"0014":["R2","yellow"],"0404":["R2","yellow"],"0410":["R2","yellow"],"0502":["R2","yellow"],"0512":["R2","yellow"],"0902":["R2","yellow"],
+                    "0912":["R2","yellow"],"1004":["R2","yellow"],"1010":["R2","yellow"],"1400":["R2","yellow"],"1414":["R2","yellow"]}}
+                    with open('Archivos/Especiales.json','w') as file: #Guardo el diccionario vacio en un JSON
+                        json.dump(auxDic,file)
+                    with open ('Archivos/Especiales.json','r') as archivo_casillas: #falta escribir el archivo Especiales.json
+                        casillas_esp=json.load(archivo_casillas)
+                    return casillas_esp[nivel] #devuelve el dic del nivel correspondiente
+                else:
+                    sys.exit()
 
     def cargar_tablero(casillas_esp, nivel):
         '''Crea el layout del tablero, asignandole a cada boton que lo conforma la key
@@ -742,8 +887,14 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
             with open('Archivos/top10_'+nivel+'.json','w') as archivo: #(si no existe lo creo al archivo) lo abro en modo escritura
                 json.dump(datos,archivo) #serializo la info
         except(FileNotFoundError):
-            sg.Popup('Error. No existe la carpeta "Archivos".', no_titlebar=True)
-            sys.Exit()
+            if not isdir("Archivos"): #si no existe la carpeta archivos, informo y doy la opcion de crearla
+                respuesta = sg.PopupYesNo('ERROR. La carpeta "Archivos" no existe. ¿Desea crearla?',no_titlebar=True)
+                if respuesta == "Yes":
+                    os.mkdir('Archivos')
+                    with open('Archivos/top10_'+nivel+'.json','w') as archivo: #(si no existe lo creo al archivo) lo abro en modo escritura
+                        json.dump(datos,archivo) #serializo la info
+                else:
+                    sys.exit()
 
     def calcular_top10(nivel,puntaje): #recibo el puntaje del jugador
         '''Una vez terminado el juego, esta funcion se fija en el puntaje del jugador:
@@ -802,8 +953,14 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
             with open ("Archivos/Partida.json", 'w') as archivo:
                 json.dump(dic_datos, archivo)
         except (FileNotFoundError):
-            sg.Popup('ERROR. El archivo JSON solicitado o su carpeta contenedora no existen.',no_titlebar=True)
-            sys.exit()
+            if not isdir("Archivos"): #si no existe la carpeta archivos, informo y doy la opcion de crearla
+                respuesta = sg.PopupYesNo('ERROR. La carpeta "Archivos" no existe. ¿Desea crearla?',no_titlebar=True)
+                if respuesta == "Yes":
+                    os.mkdir('Archivos')
+                    with open ("Archivos/Partida.json", 'w') as archivo:
+                        json.dump(dic_datos, archivo)
+                else:
+                    sys.exit()
 
     def cargar_partida ():
         '''recupera los datos de la partida guardada y los retorna
@@ -814,13 +971,24 @@ def main(cargado = False, nombre = 'Jugador', tema ='claro', nivel = 'nivel1', t
                 dic_datos = json.load(archivo)
             return dic_datos
         except (FileNotFoundError):
-            sg.Popup('ERROR. El archivo JSON solicitado o su carpeta contenedora no existen.',no_titlebar=True)
-            sys.exit()
+            if not isdir("Archivos"): #si no existe la carpeta archivos, informo y doy la opcion de crearla
+                respuesta = sg.PopupYesNo('ERROR. La carpeta "Archivos" no existe. ¿Desea crearla?',no_titlebar=True)
+                if respuesta == "Yes":
+                    os.mkdir('Archivos')
+                else:
+                    sys.exit()
+            if not isfile ("Partida.json"): #si no existe el json "Partida" lo creo y cierro el programa
+                sg.Popup('ERROR. El archivo JSON "Partida.json" no existe.',no_titlebar=True) #pregunto si quiere crear el json faltante
+                auxDic = {}
+                with open('Archivos/Partida.json','w') as file: #Guardo el diccionario vacio en un JSON
+                    json.dump(auxDic,file)
+                sys.exit()
 
 
 ####################################################################################################################################################################################################
 
     sg.ChangeLookAndFeel('DarkAmber')
+
     if cargado: #recupera los datos de la partida guardada en el JSON "partida"
         dic_datos = cargar_partida()
         ocupadas = dic_datos["tablero"]

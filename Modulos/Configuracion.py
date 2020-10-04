@@ -65,6 +65,20 @@ def main():
 
 
         elif event == 'Volver al menu':
+            #guardo las cantidades por defecto
+            aux_L = {"A": 11, "E": 11, "O": 8, "S": 7, "I": 6, "U": 6, "N": 5, "L": 4, "R": 4, "T": 4, "C": 4,
+            "D": 4, "G": 2, "M": 3, "B": 3, "P": 2, "F": 2, "H": 2, "V": 2, "Y": 1, "J": 2, "K": 1, "LL": 1,
+            "\u00d1": 1, "Q": 1, "RR": 1, "W": 1, "X": 1, "Z": 1}
+            with open('Archivos/Letras_modificado.json','w') as file: #Guardo el diccionario en un JSON
+                json.dump(aux_L,file)
+                ok = True
+            #guardo los puntajes por defecto
+            aux_P = {"A": 1, "E": 1, "O": 1, "S": 1, "I": 1, "U": 1, "N": 1, "L": 1, "R": 1, "T": 1, "C": 2,
+            "D": 2, "G": 2, "M": 3, "B": 3, "P": 3, "F": 4, "H": 4, "V": 4, "Y": 4, "J": 6, "K": 8, "LL": 8,
+            "\u00d1": 8, "Q": 8, "RR": 8, "W": 8, "X": 8, "Z": 10}
+            with open('Archivos/Puntajes_modificado.json','w') as file: #Guardo el diccionario en un JSON
+                json.dump(aux_P,file)
+                ok = True
             window.Close()
             ScrabbleAR.main()
             break
@@ -86,6 +100,18 @@ def main():
             while True:
                 event2, values2 = window2.Read()
                 if event2 == None or event2 == 'Cancelar':
+                    aux_L = {"A": 11, "E": 11, "O": 8, "S": 7, "I": 6, "U": 6, "N": 5, "L": 4, "R": 4, "T": 4, "C": 4,
+                    "D": 4, "G": 2, "M": 3, "B": 3, "P": 2, "F": 2, "H": 2, "V": 2, "Y": 1, "J": 2, "K": 1, "LL": 1,
+                    "\u00d1": 1, "Q": 1, "RR": 1, "W": 1, "X": 1, "Z": 1}
+                    with open('Archivos/Letras_modificado.json','w') as file: #Guardo el diccionario en un JSON
+                        json.dump(aux_L,file)
+                        ok = True
+                    aux_P = {"A": 1, "E": 1, "O": 1, "S": 1, "I": 1, "U": 1, "N": 1, "L": 1, "R": 1, "T": 1, "C": 2,
+                    "D": 2, "G": 2, "M": 3, "B": 3, "P": 3, "F": 4, "H": 4, "V": 4, "Y": 4, "J": 6, "K": 8, "LL": 8,
+                    "\u00d1": 8, "Q": 8, "RR": 8, "W": 8, "X": 8, "Z": 10}
+                    with open('Archivos/Puntajes_modificado.json','w') as file: #Guardo el diccionario en un JSON
+                        json.dump(aux_P,file)
+                        ok = True
                     window2.Close()
                     break
 
@@ -130,6 +156,11 @@ def main():
                         [sg.Text("    "),sg.Button('Confirmar', key='confirmar'), sg.Button('Cancelar')]
                         ]
                     window3 = sg.Window('Cantidad De Letras').Layout(letras).Finalize()
+
+                    with open('Archivos/Letras_modificado.json','r') as archivo_cantidades: #cargo el json con los valores por defecto
+                        cantidadMOD = json.load(archivo_cantidades)
+                    for L, C in cantidadMOD.items():
+                        window3.Element(L).Update(value = C)
 
                     while True:
                         event3, values3 = window3.Read()
@@ -188,6 +219,11 @@ def main():
                         [sg.Text("    "),sg.Button('Confirmar', key='confirmar'), sg.Button('Cancelar')]
                         ]
                     window4 = sg.Window('Puntaje De Letras').Layout(letras2).Finalize()
+
+                    with open('Archivos/Puntajes_modificado.json','r') as archivo_puntajes: #cargo el json con los valores por defecto
+                        puntajesMOD = json.load(archivo_puntajes)
+                    for L, C in puntajesMOD.items():
+                        window4.Element(L).Update(value = C)
 
                     while True:
                         event4, values4 = window4.Read()

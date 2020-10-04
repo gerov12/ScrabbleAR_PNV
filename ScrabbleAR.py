@@ -1,7 +1,8 @@
+import os
 import sys
 import json
 import PySimpleGUI as sg
-from os.path import isfile
+from os.path import isfile, isdir
 from Modulos import Tablero
 from Modulos import Configuracion
 
@@ -78,8 +79,18 @@ def main():
                 else:
                     sg.PopupNoButtons("No hay ninguna partida guardada.", auto_close = True, auto_close_duration = 4, no_titlebar = True)
             except (FileNotFoundError):
-                sg.Popup('ERROR. El archivo JSON solicitado o su carpeta contenedora no existen.',no_titlebar=True)
-                sys.exit()
+                if not isdir("Archivos"): #si no existe la carpeta archivos, informo y doy la opcion de crearla
+                    respuesta = sg.PopupYesNo('ERROR. La carpeta "Archivos" no existe. ¿Desea crearla?',no_titlebar=True)
+                    if respuesta == "Yes":
+                        os.mkdir('Archivos')
+                    else:
+                        sys.exit()
+                if not isfile("Archivos/Partida.json"): #si no existe el json
+                    sg.Popup("No hay ninguna partida guardada.",no_titlebar=True) #informo que no hay ninguna partida y creo el archivo faltante
+                    auxDic = {}
+                    with open('Archivos/Partida.json','w') as file: #Guardo el diccionario vacio en un JSON
+                        json.dump(auxDic,file)
+
 
         elif event == 'Partida Personalizada':
             window.Close()
