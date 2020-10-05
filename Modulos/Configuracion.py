@@ -1,8 +1,10 @@
+import os
+import sys
 import json
 import ScrabbleAR
 import PySimpleGUI as sg
 from Modulos import Tablero
-
+from os.path import isdir, isfile
 def main():
     def definir_parametros(values):
         '''Asigna los valores que el jugador selecciono a los parametros que se enviaran al tablero'''
@@ -157,11 +159,33 @@ def main():
                         ]
                     window3 = sg.Window('Cantidad De Letras').Layout(letras).Finalize()
 
-                    with open('Archivos/Letras_modificado.json','r') as archivo_cantidades: #cargo el json con los valores por defecto
-                        cantidadMOD = json.load(archivo_cantidades)
-                    for L, C in cantidadMOD.items():
-                        window3.Element(L).Update(value = C)
+                    try:
+                        with open('Archivos/Letras_modificado.json','r') as archivo_cantidades: #cargo el json con los valores por defecto
+                            cantidadMOD = json.load(archivo_cantidades)
+                        for L, C in cantidadMOD.items():
+                            window3.Element(L).Update(value = C)
+                    except:
+                        if not isdir("Archivos"): #si no existe la carpeta archivos, informo y doy la opcion de crearla
+                            respuesta = sg.PopupYesNo('ERROR. La carpeta "Archivos" no existe. ¿Desea crearla?',no_titlebar=True)
+                            if respuesta == "Yes":
+                                os.mkdir('Archivos')
+                            else:
+                                sys.exit()
+                        if not isfile("Archivos/Letras_modificado.json"): #si no existe el json
+                            respuesta = sg.PopupYesNo('ERROR. El archivo JSON "Letras_modificado.json" no existe. ¿Desea crear el archivo (con los valores por defecto)?',no_titlebar=True) #pregunto si quiere crear el json faltante
+                            if respuesta == "Yes":
+                                auxDic = {"A": 11, "E":11, "O":8, "S":7, "I":6, "U":6, "N":5, "L":4, "R":4, "T":4, "C":4, "D":4,
+                                    "G":2, "M":3, "B":3, "P":2, "F":2, "H":2, "V":2, "Y":1, "J":2, "K":1, "LL":1, "Ñ":1, "Q":1, "RR":1,
+                                     "W":1, "X":1, "Z":1}
+                                with open('Archivos/Letras_modificado.json','w') as file: #Guardo el diccionario vacio en un JSON
+                                    json.dump(auxDic,file)
+                                with open('Archivos/Letras_modificado.json','r') as archivo_cantidades: #cargo el json con los valores por defecto
+                                    cantidadMOD = json.load(archivo_cantidades)
+                                for L, C in cantidadMOD.items():
+                                    window3.Element(L).Update(value = C)
 
+                            else:
+                                sys.exit()
                     while True:
                         event3, values3 = window3.Read()
                         if event3 == None or event3 == 'Cancelar':
@@ -177,7 +201,24 @@ def main():
                                     json.dump(dic,file)
                                     ok = True
                             except(FileNotFoundError):
-                                sg.Popup('Error. No existe la carpeta "Archivos".', no_titlebar=True)
+                                if not isdir("Archivos"): #si no existe la carpeta archivos, informo y doy la opcion de crearla
+                                    respuesta = sg.PopupYesNo('ERROR. La carpeta "Archivos" no existe. ¿Desea crearla?',no_titlebar=True)
+                                    if respuesta == "Yes":
+                                        os.mkdir('Archivos')
+                                    else:
+                                        sys.exit()
+                                if not isfile("Archivos/Letras_modificado.json"): #si no existe el json
+                                    respuesta = sg.PopupYesNo('ERROR. El archivo JSON "Letras_modificado.json" no existe. ¿Desea crear el archivo (con los valores por defecto)?',no_titlebar=True) #pregunto si quiere crear el json faltante
+                                    if respuesta == "Yes":
+                                        auxDic = {"A": 11, "E":11, "O":8, "S":7, "I":6, "U":6, "N":5, "L":4, "R":4, "T":4, "C":4, "D":4,
+                                         "G":2, "M":3, "B":3, "P":2, "F":2, "H":2, "V":2, "Y":1, "J":2, "K":1, "LL":1, "Ñ":1, "Q":1, "RR":1,
+                                          "W":1, "X":1, "Z":1}
+                                        with open('Archivos/Letras_modificado.json','w') as file: #Guardo el diccionario vacio en un JSON
+                                            json.dump(auxDic,file)
+                                        ok = False
+
+                                    else:
+                                        sys.exit()
                             finally:
                                 break
 
@@ -220,11 +261,32 @@ def main():
                         ]
                     window4 = sg.Window('Puntaje De Letras').Layout(letras2).Finalize()
 
-                    with open('Archivos/Puntajes_modificado.json','r') as archivo_puntajes: #cargo el json con los valores por defecto
-                        puntajesMOD = json.load(archivo_puntajes)
-                    for L, C in puntajesMOD.items():
-                        window4.Element(L).Update(value = C)
-
+                    try:
+                        with open('Archivos/Puntajes_modificado.json','r') as archivo_puntajes: #cargo el json con los valores por defecto
+                            puntajesMOD = json.load(archivo_puntajes)
+                        for L, C in puntajesMOD.items():
+                            window4.Element(L).Update(value = C)
+                    except:
+                        if not isdir("Archivos"): #si no existe la carpeta archivos, informo y doy la opcion de crearla
+                            respuesta = sg.PopupYesNo('ERROR. La carpeta "Archivos" no existe. ¿Desea crearla?',no_titlebar=True)
+                            if respuesta == "Yes":
+                                os.mkdir('Archivos')
+                            else:
+                                sys.exit()
+                        if not isfile("Archivos/Puntajes_modificado.json"): #si no existe el json
+                            respuesta = sg.PopupYesNo('ERROR. El archivo JSON "Puntajes_modificado.json" no existe. ¿Desea crear el archivo (con los valores por defecto)?',no_titlebar=True) #pregunto si quiere crear el json faltante
+                            if respuesta == "Yes":
+                                auxDic = {"A": 1, "E": 1, "O": 1, "S": 1, "I": 1, "U": 1, "N": 1, "L": 1, "R": 1, "T": 1, "C": 2, "D": 2,
+                                 "G": 2, "M": 3, "B": 3, "P": 3, "F": 4, "H": 4, "V": 4, "Y": 4, "J": 6, "K": 8, "LL": 8, "\u00d1": 8,
+                                 "Q": 8, "RR": 8, "W": 8, "X": 8, "Z": 10}
+                                with open('Archivos/Puntajes_modificado.json','w') as file: #Guardo el diccionario vacio en un JSON
+                                    json.dump(auxDic,file)
+                                with open('Archivos/Puntajes_modificado.json','r') as archivo_puntajes: #cargo el json con los valores por defecto
+                                    puntajesMOD = json.load(archivo_puntajes)
+                                for L, C in puntajesMOD.items():
+                                    window4.Element(L).Update(value = C)
+                            else:
+                                sys.exit()
                     while True:
                         event4, values4 = window4.Read()
                         if event4 == None or event4 == 'Cancelar':
@@ -240,7 +302,21 @@ def main():
                                     json.dump(dic,file)
                                     ok2 = True
                             except(FileNotFoundError):
-                                sg.Popup('Error. No existe la carpeta "Archivos".', no_titlebar=True)
+                                if not isdir("Archivos"): #si no existe la carpeta archivos, informo y doy la opcion de crearla
+                                    respuesta = sg.PopupYesNo('ERROR. La carpeta "Archivos" no existe. ¿Desea crearla?',no_titlebar=True)
+                                    if respuesta == "Yes":
+                                        os.mkdir('Archivos')
+                                    else:
+                                        sys.exit()
+                                if not isfile("Archivos/Puntajes_modificado.json"): #si no existe el json
+                                    respuesta = sg.PopupYesNo('ERROR. El archivo JSON "Puntajes_modificado.json" no existe. ¿Desea crear el archivo (con los valores por defecto)?',no_titlebar=True) #pregunto si quiere crear el json faltante
+                                    if respuesta == "Yes":
+                                        auxDic = {"A": 1, "E": 1, "O": 1, "S": 1, "I": 1, "U": 1, "N": 1, "L": 1, "R": 1, "T": 1, "C": 2,
+                                        "D": 2, "G": 2, "M": 3, "B": 3, "P": 3, "F": 4, "H": 4, "V": 4, "Y": 4, "J": 6, "K": 8, "LL": 8,
+                                        "\u00d1": 8, "Q": 8, "RR": 8, "W": 8, "X": 8, "Z": 10}
+                                        with open('Archivos/Puntajes_modificado.json','w') as file: #Guardo el diccionario vacio en un JSON
+                                            json.dump(auxDic,file)
+                                        ok = False
                             finally:
                                 break
 
